@@ -1,5 +1,6 @@
 #pragma once
 #include <GL/glew.h>
+#include "Shape.h"
 #include <vector>
 
 #ifndef RENDERER_H
@@ -10,9 +11,10 @@ class Renderer {
         Renderer();
 
         void addVertex(float values[],
-                       GLuint index, 
-                       GLuint number = 3, 
-                       GLuint size = 3, 
+                       size_t sizeValues,
+                       GLuint index,
+                       GLuint number = 3,
+                       GLuint size = 3,
                        GLuint offset = 0);
 
         void addVertexColored(float values[],
@@ -25,13 +27,21 @@ class Renderer {
                               GLuint posOffset = 0,
                               GLuint colorOffset = 12);
 
-        void addIndeces(GLuint *indices, size_t size);
+        void addIndeces(GLuint indices[], size_t size);
+
+        void addShape(class Shape *shape);
+
         void bind();
+
+        int getShapesSize() const { return this->shapes.size(); }
+
+        int getShapeVertexSize(unsigned int pos) const { return this->shapes[pos]->getIndices().size(); }
 
     private:
         GLuint VAO;
         std::vector<GLuint> VBOs;
         std::vector<GLuint> EBOs;
+        std::vector<Shape*> shapes;
 };
 
 #endif

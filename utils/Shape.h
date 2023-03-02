@@ -7,9 +7,17 @@
 
 class Shape {
     public:
-    private:
+        std::vector<GLuint> getIndices() const { return this->indices; }
+        std::vector<GLfloat> getVertices() const { return this->vertices; }
+        std::vector<GLfloat> getColors() const { return this->colors; }
+
+    protected:
         std::vector<GLuint> indices;
         std::vector<GLfloat> vertices;
+        std::vector<GLfloat> colors;
+
+    private:
+        virtual void buildShape() {};
 };
 
 #endif
