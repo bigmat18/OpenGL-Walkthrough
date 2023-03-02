@@ -3,6 +3,7 @@
 #include "../utils/debugging.h"
 #include "../utils/Shader.h"
 #include "../utils/Renderer.h"
+#include "../utils/Cube.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -28,41 +29,21 @@ int main(void){
     glewInit();
     printout_opengl_glsl_info();
 
-    GLuint posIndex = 0, colorIndex = 1;
-
-    GLfloat vertices[] = {
-        -1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-        -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-        -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
-        1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, -1.0f, 1.0f, 0.5f, 0.5f,
-        1.0f, 1.0f, -1.0f, 0.5f, 1.0f, 0.5f
-    };
-
-    GLuint indices[] = {
-        0, 1, 2, 2, 1, 3, // front
-        5, 4, 7, 7, 4, 6, // back
-        4, 0, 6, 6, 0, 2, // left
-        1, 5, 3, 3, 5, 7, // right
-        2, 3, 6, 6, 3, 7, // top
-        4, 5, 0, 0, 5, 1  // bottom
-    };
-
-    glm::vec3 cubePositions[] = {
-        glm::vec3(-2.0f, 2.0f, 0.0f),
-        glm::vec3(-2.0f, -2.0f, 0.0f),
-        glm::vec3(2.0f, 2.0f, 0.0f),
-        glm::vec3(2.0f, -2.0f, 0.0f)
+    std::vector<GLfloat> colors = {
+        1.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 1.0f,
+        1.0f, 0.0f, 1.0f,
+        0.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 0.0f,
+        0.5f, 0.0f, 0.5f,
+        0.0f, 0.5f, 0.5f
     };
 
     Renderer *renderer = new Renderer();
-    
-    for(unsigned int i=0; i<4; i++){
-        renderer->addVertexColored(vertices, sizeof(vertices), posIndex, colorIndex);
-        renderer->addIndeces(indices, sizeof(indices));
-    }
+    Cube *cube = new Cube(colors, 0.5f);
+
+    renderer->addShape(cube);
 
     Shader *shader = new Shader("shaders/basic.vert", "shaders/basic.frag");
     glEnable(GL_DEPTH_TEST);
@@ -73,18 +54,20 @@ int main(void){
 
         shader->use();
 
-        for(int i=0; i<4; i++){
-            glm::mat4 model = glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 0.3f)), cubePositions[i]);
+        for(int i=0; i<renderer->getShapesSize(); ++i){
+            glm::mat4 model = glm::mat4(1.0f);
             glm::mat4 view = glm::mat4(1.0f);
             glm::mat4 projection;
 
             shader->setMatrix4("model", glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f)));
-            shader->setMatrix4("view", glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f)));
+            shader->setMatrix4("view", glm::translate(view, glm::vec3(0.0f, 0.0f, -10.0f)));
             shader->setMatrix4("projection", glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f));
 
             renderer->bind();
-            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, renderer->getShapeVertexSize(i), GL_UNSIGNED_INT, 0);
         }
+
+
         // glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glfwSwapBuffers(window);
