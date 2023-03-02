@@ -61,8 +61,6 @@ void Renderer::addShape(Shape *shape){
                     shape->getColors().size() * sizeof(float), 1);
     this->addIndeces(&shape->getIndices()[0], 
                     shape->getIndices().size() * sizeof(int));
-
-    this->shapes.push_back(shape);
 }
 
 void Renderer::bind() {

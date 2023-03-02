@@ -21,12 +21,12 @@ void Cube::buildShape() {
     };
 
     this->indices = {
-        0, 1, 2, 2, 1, 3, // front
-        5, 4, 7, 7, 4, 6, // back
-        4, 0, 6, 6, 0, 2, // left
-        1, 5, 3, 3, 5, 7, // right
-        2, 3, 6, 6, 3, 7, // top
-        4, 5, 0, 0, 5, 1  // bottom
+        0, 1, 2, 2, 1, 3,
+        5, 4, 7, 7, 4, 6,
+        4, 0, 6, 6, 0, 2,
+        1, 5, 3, 3, 5, 7,
+        2, 3, 6, 6, 3, 7,
+        4, 5, 0, 0, 5, 1
     };
 
     while (this->colors.size() < this->vertices.size()){

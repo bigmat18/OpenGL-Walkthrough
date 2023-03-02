@@ -33,15 +33,10 @@ class Renderer {
 
         void bind();
 
-        int getShapesSize() const { return this->shapes.size(); }
-
-        int getShapeVertexSize(unsigned int pos) const { return this->shapes[pos]->getIndices().size(); }
-
     private:
         GLuint VAO;
         std::vector<GLuint> VBOs;
         std::vector<GLuint> EBOs;
-        std::vector<Shape*> shapes;
 };
 
 #endif
