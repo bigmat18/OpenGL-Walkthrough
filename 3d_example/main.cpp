@@ -9,6 +9,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "../framework/VertexArray.h"
+#include "../framework/VertexBuffer.h"
+#include "../framework/IndexBuffer.h"
+
 int main(void){
     if(!glfwInit()) return -1;
 
@@ -40,18 +44,41 @@ int main(void){
         0.0f, 0.5f, 0.5f
     };
 
-    Renderer *renderer = new Renderer();
-    Cube *cube = new Cube(colors, 0.5f);
+    GLfloat positions[] = {
+        -0.5, -0.5, 0.0,
+        0.5, -0.5, 0.0,
+        0.5, 0.5, 0.0,
+        -0.5, 0.5, 0.0
+    };
 
-    renderer->addShape(cube);
+    GLuint indices[] = {
+        0, 1, 2,
+        2, 3, 0
+    };
+
+    VertexArray va;
+    VertexBuffer vb(positions, 9 * sizeof(float));
+    VertexBufferLayout layout;
+    layout.Push<float>(3);
+    va.AddBuffer(vb, layout);
+
+    IndexBuffer ib(indices, 6);
+
+    // Renderer *renderer = new Renderer();
+    // Cube *cube = new Cube(colors, 0.5f);
+
+    // renderer->addShape(cube);
+
+
 
     Shader *shader = new Shader("shaders/basic.vert", "shaders/basic.frag");
     glEnable(GL_DEPTH_TEST);
 
-    glm::vec3 cubePositions[] = {
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(2.0f, 5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f)
+    std::vector <glm::vec3> cubePositions = {
+        glm::vec3(-1.5f, 1.5f, 0.0f),
+        glm::vec3(-1.5f, -1.5f, 0.0f),
+        glm::vec3(1.5f, 1.5f, 0.0f),
+        glm::vec3(1.5f, -1.5f, 0.0f)
     };
 
     while (!glfwWindowShouldClose(window)){
@@ -59,20 +86,23 @@ int main(void){
 
         shader->use();
 
-        for(int i=0; i<3; ++i){
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), cubePositions[i]);
-            glm::mat4 view = glm::mat4(1.0f);
-            glm::mat4 projection;
+        // for(int i=0; i<cubePositions.size(); ++i){
+        //     glm::mat4 model = glm::rotate(glm::translate(glm::mat4(1.0f), cubePositions[i]), (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        //     glm::mat4 view = glm::mat4(1.0f);
+        //     glm::mat4 projection;
 
-            shader->setMatrix4("model", model);
-            shader->setMatrix4("view", glm::translate(view, glm::vec3(0.0f, 0.0f, -10.0f)));
-            shader->setMatrix4("projection", glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f));
+        //     shader->setMatrix4("model", model);
+        //     shader->setMatrix4("view", glm::translate(view, glm::vec3(0.0f, 0.0f, -10.0f)));
+        //     shader->setMatrix4("projection", glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f));
 
-            renderer->bind();
-            glDrawElements(GL_TRIANGLES, cube->getIndices().size(), GL_UNSIGNED_INT, 0);
-        }
+        //     renderer->bind();
+        //     glDrawElements(GL_TRIANGLES, cube->getIndices().size(), GL_UNSIGNED_INT, 0);
+        // }
 
-
+        va.Bind();
+        vb.Bind();
+        ib.Bind();
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glfwSwapBuffers(window);
