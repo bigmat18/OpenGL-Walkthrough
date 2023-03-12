@@ -6,4 +6,4 @@ COMPILER_FLAGS = -std=c++17 -Wall -O2 -g
 OBJ_NAME = main
 
 all:
-	$(CC) $(COMPILER_FLAGS) $(OBJS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) -o $(OBJ_NAME) ../utils/*.cpp -framework OpenGL
+	$(CC) $(COMPILER_FLAGS) $(OBJS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) -o $(OBJ_NAME) ../framework/*.cpp -framework OpenGL
