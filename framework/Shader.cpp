@@ -13,7 +13,7 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath){
     glDeleteShader(this->fragmentShader);
 }
 
-void Shader::use() { glUseProgram(ID); }
+void Shader::use() const { glUseProgram(this->ID); }
 
 bool Shader::createShader(const char *shaderCode, const GLuint type){
     GLuint shader;

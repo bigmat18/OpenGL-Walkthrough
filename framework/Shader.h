@@ -11,7 +11,7 @@ class Shader {
         GLuint ID;
 
         Shader(const char* vertexPath, const char* fragmentPath);
-        void use();
+        void use() const;
 
         void setBool(const std::string &name, bool value) const {
             glUniform1i(glGetUniformLocation(this->ID, name.c_str()), (int)value);
