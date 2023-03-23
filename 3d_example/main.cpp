@@ -1,13 +1,12 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "../utils/debugging.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "../framework/Cube.h"
-
+#include "../framework/debugging.h"
 
 int main(void){
     if(!glfwInit()) return -1;

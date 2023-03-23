@@ -3,7 +3,7 @@
 #include <iostream>
 
 Cube::Cube(GLfloat side, const char* vertexPath, const char* fragmentPath) : Shape(vertexPath, fragmentPath), 
-                                                                            side(side) 
+                                                                             side(side) 
 { this->BuildShape(); }
 
 void Cube::BuildShape() {
