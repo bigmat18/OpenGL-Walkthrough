@@ -10,15 +10,17 @@
 #include "../framework/Camera.h"
 
 Camera *camera = new Camera(800, 600, 45);
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 void MouseCallBackWrapper(GLFWwindow *window, double xpos, double ypos){
     if (camera)
-        return camera->MouseCallBack(window, xpos, ypos);
+        return camera->MouseCallBack(xpos, ypos);
 }
 
 void ScrollCallBackWrapper(GLFWwindow *window, double xoffset, double yoffset){
     if (camera)
-        return camera->ScrollCallBack(window, xoffset, yoffset);
+        return camera->ScrollCallBack(yoffset);
 }
 
 int main(void){
@@ -63,14 +65,17 @@ int main(void){
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        camera->UpdateDeltaTime();
-        camera->ProcessInput(window);
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
+        camera->ProcessInput(window, deltaTime);
         glfwSetCursorPosCallback(window, MouseCallBackWrapper);
         glfwSetScrollCallback(window, ScrollCallBackWrapper);
 
         glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
-        glm::mat4 projection = glm::perspective(glm::radians(camera->GetFov()), 800.0f / 600.0f, 0.1f, 100.0f);
-        glm::mat4 view = camera->GetViewMatrix(window);
+        glm::mat4 projection = glm::perspective(glm::radians(camera->GetZoom()), 800.0f / 600.0f, 0.1f, 100.0f);
+        glm::mat4 view = camera->GetViewMatrix();
 
         cube->setShaderUniform<glm::mat4>(model, "model");
         cube->setShaderUniform<glm::mat4>(view, "view");
