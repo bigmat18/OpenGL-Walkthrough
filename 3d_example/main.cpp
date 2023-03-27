@@ -8,6 +8,7 @@
 #include "../framework/Cube.h"
 #include "../framework/debugging.h"
 #include "../framework/Camera.h"
+#include "../framework/Texture.h"
 
 Camera *camera = new Camera(800, 600, 45);
 float deltaTime = 0.0f;
@@ -56,8 +57,10 @@ int main(void){
     //     0.0f, 0.5f, 0.5f
     // };
 
-    Cube* cube = new Cube(0.5f, "shaders/basic.vert", "shaders/basic.frag");
+    Texture *texture = new Texture("colzi.jpg");
+    Cube* cube = new Cube(0.5f, "shaders/basic.vert", "shaders/basic.frag", true);
     glEnable(GL_DEPTH_TEST);
+    
 
     while (!glfwWindowShouldClose(window)){
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -81,12 +84,12 @@ int main(void){
         cube->setShaderUniform<glm::mat4>(view, "view");
         cube->setShaderUniform<glm::mat4>(projection, "projection");
 
+        texture->Bind();
         cube->Draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
     glfwTerminate();
     
     return 0;
