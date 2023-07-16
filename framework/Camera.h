@@ -27,6 +27,7 @@ class Camera {
         Camera(const GLfloat WIDTH, const GLfloat HEIGTH, const GLfloat fov);
 
         GLfloat GetZoom() const { return this->Zoom; };
+        glm::vec3 GetPosizion() const { return this->Position; };
         glm::mat4 GetViewMatrix() const { return glm::lookAt(this->Position, this->Position + this->Front, this->Up); };
 
         void ProcessInput(GLFWwindow *window, float deltaTime);

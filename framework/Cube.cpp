@@ -2,8 +2,8 @@
 #include "VertexBuffer.h"
 #include <iostream>
 
-Cube::Cube(GLfloat side, const char* vertexPath, const char* fragmentPath, const bool texture) 
-: Shape(vertexPath, fragmentPath), side(side), texture(texture)
+Cube::Cube(GLfloat side, const char *vertexPath, const char *fragmentPath, const Color *color, const bool texture)
+    : Shape(vertexPath, fragmentPath), side(side), texture(texture), color(color)
 { this->BuildShape(); }
 
 void Cube::BuildShape() {
@@ -17,7 +17,7 @@ void Cube::BuildShape() {
             -this->side, -this->side, -this->side,
             this->side, -this->side, -this->side,
             -this->side, this->side, -this->side,
-            this->side, this->side, -this->side,
+            this->side, this->side, -this->side
         };
 
         GLuint indices[] = {
@@ -91,4 +91,30 @@ void Cube::BuildShape() {
         layout.Push<float>(2);
         this->VAO->AddBuffer(*this->VBO, layout);
     }
+}
+
+std::vector<Color> Cube::getColor(){
+    std::vector<Color> colors;
+    if(this->color != nullptr){
+        int size = 8 ? this->texture : 36;
+        for(unsigned int i = 0; i < size; i++)
+            colors.push_back(*(this->color));
+
+    } else if(!this->texture) {
+        colors = {
+            (Color){1.0f, 0.0f, 0.0f, 1.0f},
+            (Color){0.0f, 1.0f, 0.0f, 1.0f},
+            (Color){0.0f, 0.0f, 1.0f, 1.0f},
+            (Color){1.0f, 0.0f, 1.0f, 1.0f},
+            (Color){0.0f, 1.0f, 1.0f, 1.0f},
+            (Color){1.0f, 1.0f, 0.0f, 1.0f},
+            (Color){0.5f, 0.5f, 0.0f, 1.0f},
+            (Color){0.0f, 0.5f, 0.5f, 1.0f}
+        };
+    } else {
+        for(unsigned int i = 0; i < 36; i++)
+            colors.push_back((Color){0.0f, 0.0f, 0.0f, 0.0f});
+    }
+
+    return colors;
 }

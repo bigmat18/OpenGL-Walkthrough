@@ -39,4 +39,7 @@ class Shape {
 
         template <>
         void setShaderUniform<glm::mat4>(glm::mat4 data, const char* name) { this->shader->setMatrix4(name, data); }
+
+        template <>
+        void setShaderUniform<glm::vec3>(glm::vec3 data, const char *name) { this->shader->setVec3(name, data); }
 };

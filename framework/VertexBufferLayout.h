@@ -30,15 +30,13 @@ class VertexBufferLayout {
         void Push(unsigned int count) {}
 
         template<>
-        void Push<float>(unsigned int count){ 
+        void Push<float>(unsigned int count) { 
             this->mElements.push_back((VertexBufferElement){GL_FLOAT, count, GL_FALSE}); 
             this->mStride += count * VertexBufferElement::GetSizeOfType(GL_FLOAT);
-
         }
 
         template <>
-        void Push<unsigned int>(unsigned int count)
-        {
+        void Push<unsigned int>(unsigned int count) {
             this->mElements.push_back((VertexBufferElement){GL_UNSIGNED_INT, count, GL_FALSE});
             this->mStride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_INT);
         }

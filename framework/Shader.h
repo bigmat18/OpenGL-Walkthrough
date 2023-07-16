@@ -29,6 +29,10 @@ class Shader {
             glUniformMatrix4fv(glGetUniformLocation(this->ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
         }
 
+        void setVec3(const std::string &name, glm::vec3 vector) const {
+            glUniform3f(glGetUniformLocation(this->ID, name.c_str()), vector.x, vector.y, vector.z);
+        }
+
     private:
         GLuint vertexShader;
         GLuint fragmentShader;
