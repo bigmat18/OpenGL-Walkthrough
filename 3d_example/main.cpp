@@ -5,6 +5,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <sstream>
+#include <string>
+
 #include "../framework/Cube.h"
 #include "../framework/debugging.h"
 #include "../framework/Camera.h"
@@ -143,6 +146,13 @@ int main(void){
         glm::vec3(-1.3f,  1.0f, -1.5f)  
     };
 
+    glm::vec3 pointLightPositions[] = {
+        glm::vec3( 0.7f,  0.2f,  2.0f),
+        glm::vec3( 2.3f, -3.3f, -4.0f),
+        glm::vec3(-4.0f,  2.0f, -12.0f),
+        glm::vec3( 0.0f,  0.0f, -3.0f)
+    };
+
     glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.31f);
     glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::mat4 model, projection, view;
@@ -164,46 +174,53 @@ int main(void){
         projection = glm::perspective(glm::radians(camera->GetZoom()), 800.0f / 600.0f, 0.1f, 100.0f);
         view = camera->GetViewMatrix();
 
-        model = glm::translate(glm::mat4(1.0f), lightPos);
-        model = glm::translate(model, (glm::vec3){(float)sin(glfwGetTime()), (float)sin(glfwGetTime()), 1.0f});
-        model = glm::scale(model, glm::vec3(0.2f));
         light->use();
         light->setMatrix4("model" , model);
         light->setMatrix4("view", view);
         light->setMatrix4("projection", projection);
-        lightcubeVAO->Bind();
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        for (unsigned int i = 0; i < 4; i++){
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, pointLightPositions[i]);
+            model = glm::scale(model, glm::vec3(0.2f));
+            light->setMatrix4("model", model);
+            lightcubeVAO->Bind();
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         cube->use();
-        cube->setMatrix4("model", model);
         cube->setMatrix4("view", view);
         cube->setMatrix4("projection", projection);
-
         cube->setVec3("viewPos", camera->GetPosizion());
-
         cube->setInt("material.diffuse", 0);
         cube->setInt("material.specular", 1);
         cube->setFloat("material.shininess", 32.0f);
 
-        cube->setVec3("light.ambient", (glm::vec3){0.2f, 0.2f, 0.2f});
-        cube->setVec3("light.diffuse", (glm::vec3){0.5f, 0.5f, 0.5f});
-        cube->setVec3("light.specular", (glm::vec3){1.0f, 1.0f, 1.0f});
-        cube->setFloat("light.constant", 1.0f);
-        cube->setFloat("light.linear", 0.09f);
-        cube->setFloat("light.quadratic", 0.032f);
-        cube->setVec3("light.position", (glm::vec3){sin(glfwGetTime()), sin(glfwGetTime()), 1.0f});
-
-        container->Bind(0);
-        container_specular->Bind(1);
-        cubeVAO->Bind();
+        cube->setVec3("light.diraction", (glm::vec3){-0.2f, -1.0f, -0.3f});
+        cube->setVec3("light.ambient", (glm::vec3){0.05f, 0.05f, 0.05f});
+        cube->setVec3("light.diffuse", (glm::vec3){0.4f, 0.4f, 0.4f});
+        cube->setVec3("light.specular", (glm::vec3){0.5f, 0.5f, 0.5f});
 
         for (unsigned int i = 0; i < 10; i++){
+            if (i < 4) {
+                cube->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].position"), pointLightPositions[i]);
+                cube->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].ambient"), (glm::vec3){0.05f, 0.05f, 0.05f});
+                cube->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].diffuse"), (glm::vec3){0.8f, 0.8f, 0.8f});
+                cube->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].specular"), (glm::vec3){1.0f, 1.0f, 1.0f});
+                cube->setFloat(std::string("pointLights[") + std::to_string(i) + std::string("].constant"), 1.0f);
+                cube->setFloat(std::string("pointLights[") + std::to_string(i) + std::string("].linear"), 0.09f);
+                cube->setFloat(std::string("pointLights[") + std::to_string(i) + std::string("].quadratic"), 0.032f);
+            }
+
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             cube->setMatrix4("model", model);
 
+            container->Bind(0);
+            container_specular->Bind(1);
+            cubeVAO->Bind();
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
