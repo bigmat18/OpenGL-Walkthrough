@@ -99,23 +99,24 @@ int main(void){
     };
 
     float surfaces[] = {
-        -0.5f, -0.5f, -0.5f,
-        0.5f, -0.5f, -0.5f,
-        0.5f, 0.5f, -0.5f,
-        0.5f, 0.5f, -0.5f,
-        -0.5f, 0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
     };
 
     Texture *container = new Texture("container2.png");
     Texture *container_specular = new Texture("container2_specular.png");
+    Texture *wood = new Texture("wood.png");
 
     Shader *cube = new Shader("shaders/basic.vert", "shaders/basic.frag");
     Shader *light = new Shader("shaders/light.vert", "shaders/light.frag");
-    Shader *surface = new Shader("shaders/light.vert", "shaders/light.frag");
+    Shader *surface = new Shader("shaders/surface.vert", "shaders/surface.frag");
 
     VertexBuffer *VBO = new VertexBuffer(vertices, 8 * 36 * sizeof(float)),
-                 *surfaceVBO = new VertexBuffer(surfaces, 18 * sizeof(float));
+                 *surfaceVBO = new VertexBuffer(surfaces, 30 * sizeof(float));
 
     VertexArray *cubeVAO = new VertexArray(), 
                 *lightcubeVAO = new VertexArray(),
@@ -128,6 +129,7 @@ int main(void){
 
     VertexBufferLayout *layoutSourface = new VertexBufferLayout();
     layoutSourface->Push<float>(3);
+    layoutSourface->Push<float>(2);
 
     cubeVAO->AddBuffer(*VBO, *layout);
     lightcubeVAO->AddBuffer(*VBO, *layout);
@@ -135,22 +137,22 @@ int main(void){
 
     glm::vec3 cubePositions[] = {
         glm::vec3( 0.0f,  0.0f,  0.0f), 
-        glm::vec3( 2.0f,  5.0f, -15.0f), 
-        glm::vec3(-1.5f, -2.2f, -2.5f),  
-        glm::vec3(-3.8f, -2.0f, -12.3f),  
-        glm::vec3( 2.4f, -0.4f, -3.5f),  
-        glm::vec3(-1.7f,  3.0f, -7.5f),  
-        glm::vec3( 1.3f, -2.0f, -2.5f),  
-        glm::vec3( 1.5f,  2.0f, -2.5f), 
-        glm::vec3( 1.5f,  0.2f, -1.5f), 
-        glm::vec3(-1.3f,  1.0f, -1.5f)  
+        // glm::vec3( 2.0f,  5.0f, -15.0f), 
+        // glm::vec3(-1.5f, -2.2f, -2.5f),  
+        // glm::vec3(-3.8f, -2.0f, -12.3f),  
+        // glm::vec3( 2.4f, -0.4f, -3.5f),  
+        // glm::vec3(-1.7f,  3.0f, -7.5f),  
+        // glm::vec3( 1.3f, -2.0f, -2.5f),  
+        // glm::vec3( 1.5f,  2.0f, -2.5f), 
+        // glm::vec3( 1.5f,  0.2f, -1.5f), 
+        // glm::vec3(-1.3f,  1.0f, -1.5f)  
     };
 
     glm::vec3 pointLightPositions[] = {
         glm::vec3( 0.7f,  0.2f,  2.0f),
-        glm::vec3( 2.3f, -3.3f, -4.0f),
-        glm::vec3(-4.0f,  2.0f, -12.0f),
-        glm::vec3( 0.0f,  0.0f, -3.0f)
+        glm::vec3( -1.8f, 0.1f, -2.4f),
+        // glm::vec3(-4.0f,  2.0f, -12.0f),
+        // glm::vec3( 0.0f,  0.0f, -3.0f)
     };
 
     glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.31f);
@@ -174,12 +176,23 @@ int main(void){
         projection = glm::perspective(glm::radians(camera->GetZoom()), 800.0f / 600.0f, 0.1f, 100.0f);
         view = camera->GetViewMatrix();
 
+        surface->use();
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(7.0f));
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        surface->setMatrix4("model", model);
+        surface->setMatrix4("view", view);
+        surface->setMatrix4("projection", projection);
+        wood->Bind(0);
+        surfaceVAO->Bind();
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
         light->use();
-        light->setMatrix4("model" , model);
         light->setMatrix4("view", view);
         light->setMatrix4("projection", projection);
 
-        for (unsigned int i = 0; i < 4; i++){
+        for (unsigned int i = 0; i < 2; i++){
             model = glm::mat4(1.0f);
             model = glm::translate(model, pointLightPositions[i]);
             model = glm::scale(model, glm::vec3(0.2f));
@@ -188,21 +201,21 @@ int main(void){
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-        cube->use();
-        cube->setMatrix4("view", view);
-        cube->setMatrix4("projection", projection);
-        cube->setVec3("viewPos", camera->GetPosizion());
-        cube->setInt("material.diffuse", 0);
-        cube->setInt("material.specular", 1);
-        cube->setFloat("material.shininess", 32.0f);
+        for (unsigned int i = 0; i < 1; i++){
+            cube->use();
+            cube->setMatrix4("view", view);
+            cube->setMatrix4("projection", projection);
+            cube->setVec3("viewPos", camera->GetPosizion());
+            cube->setInt("material.diffuse", 0);
+            cube->setInt("material.specular", 1);
+            cube->setFloat("material.shininess", 32.0f);
 
-        cube->setVec3("light.diraction", (glm::vec3){-0.2f, -1.0f, -0.3f});
-        cube->setVec3("light.ambient", (glm::vec3){0.05f, 0.05f, 0.05f});
-        cube->setVec3("light.diffuse", (glm::vec3){0.4f, 0.4f, 0.4f});
-        cube->setVec3("light.specular", (glm::vec3){0.5f, 0.5f, 0.5f});
+            cube->setVec3("light.diraction", (glm::vec3){-0.2f, -1.0f, -0.3f});
+            cube->setVec3("light.ambient", (glm::vec3){0.05f, 0.05f, 0.05f});
+            cube->setVec3("light.diffuse", (glm::vec3){0.4f, 0.4f, 0.4f});
+            cube->setVec3("light.specular", (glm::vec3){0.5f, 0.5f, 0.5f});
 
-        for (unsigned int i = 0; i < 10; i++){
-            if (i < 4) {
+            for (unsigned int i = 0; i < 2; i++) {
                 cube->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].position"), pointLightPositions[i]);
                 cube->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].ambient"), (glm::vec3){0.05f, 0.05f, 0.05f});
                 cube->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].diffuse"), (glm::vec3){0.8f, 0.8f, 0.8f});
@@ -227,6 +240,7 @@ int main(void){
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
 
     delete VBO;
     delete cubeVAO;
