@@ -14,7 +14,10 @@
 #include "../framework/Texture.h"
 #include "../framework/Shader.h"
 
-Camera *camera = new Camera(800, 600, 45);
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+
+Camera *camera = new Camera(SCR_WIDTH, SCR_HEIGHT, 45);
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
@@ -39,7 +42,7 @@ int main(void){
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     #endif
 
-    GLFWwindow *window = glfwCreateWindow(800, 600, "3D test", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "3D test", NULL, NULL);
     if(!window) {
         glfwTerminate();
         return -1;
@@ -99,12 +102,12 @@ int main(void){
     };
 
     float surfaces[] = {
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,
+        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
+        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
+        -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
     };
 
     Texture *container = new Texture("container2.png");
@@ -116,7 +119,7 @@ int main(void){
     Shader *surface = new Shader("shaders/surface.vert", "shaders/surface.frag");
 
     VertexBuffer *VBO = new VertexBuffer(vertices, 8 * 36 * sizeof(float)),
-                 *surfaceVBO = new VertexBuffer(surfaces, 30 * sizeof(float));
+                 *surfaceVBO = new VertexBuffer(surfaces, 8 * 6 * sizeof(float));
 
     VertexArray *cubeVAO = new VertexArray(), 
                 *lightcubeVAO = new VertexArray(),
@@ -128,6 +131,7 @@ int main(void){
     layout->Push<float>(2);
 
     VertexBufferLayout *layoutSourface = new VertexBufferLayout();
+    layoutSourface->Push<float>(3);
     layoutSourface->Push<float>(3);
     layoutSourface->Push<float>(2);
 
@@ -176,15 +180,34 @@ int main(void){
         projection = glm::perspective(glm::radians(camera->GetZoom()), 800.0f / 600.0f, 0.1f, 100.0f);
         view = camera->GetViewMatrix();
 
-        surface->use();
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
         model = glm::scale(model, glm::vec3(7.0f));
         model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        surface->setMatrix4("model", model);
-        surface->setMatrix4("view", view);
-        surface->setMatrix4("projection", projection);
-        wood->Bind(0);
+        cube->use();
+        cube->setMatrix4("model", model);
+        cube->setMatrix4("view", view);
+        cube->setMatrix4("projection", projection);
+        cube->setVec3("viewPos", camera->GetPosizion());
+        cube->setInt("material.diffuse", 1);
+        cube->setInt("material.specular", 1);
+        cube->setFloat("material.shininess", 32.0f);
+
+        cube->setVec3("light.diraction", (glm::vec3){-0.2f, -1.0f, -0.3f});
+        cube->setVec3("light.ambient", (glm::vec3){0.05f, 0.05f, 0.05f});
+        cube->setVec3("light.diffuse", (glm::vec3){0.4f, 0.4f, 0.4f});
+        cube->setVec3("light.specular", (glm::vec3){0.5f, 0.5f, 0.5f});
+
+        for (unsigned int i = 0; i < 2; i++) {
+            cube->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].position"), pointLightPositions[i]);
+            cube->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].ambient"), (glm::vec3){0.05f, 0.05f, 0.05f});
+            cube->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].diffuse"), (glm::vec3){0.8f, 0.8f, 0.8f});
+            cube->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].specular"), (glm::vec3){1.0f, 1.0f, 1.0f});
+            cube->setFloat(std::string("pointLights[") + std::to_string(i) + std::string("].constant"), 1.0f);
+            cube->setFloat(std::string("pointLights[") + std::to_string(i) + std::string("].linear"), 0.09f);
+            cube->setFloat(std::string("pointLights[") + std::to_string(i) + std::string("].quadratic"), 0.032f);
+        }
+        wood->Bind(1);
         surfaceVAO->Bind();
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -231,8 +254,8 @@ int main(void){
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
             cube->setMatrix4("model", model);
 
-            container->Bind(0);
-            container_specular->Bind(1);
+            wood->Bind(0);
+            // container_specular->Bind(1);
             cubeVAO->Bind();
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
