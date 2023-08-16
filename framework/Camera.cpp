@@ -7,6 +7,8 @@ const float PITCH = 0.0f;
 const float SPEED = 2.5f;
 const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
 
 Camera::Camera(const float width, const float height, const float fov) : Yaw(YAW),
                                                                          Pitch(PITCH),
@@ -18,6 +20,8 @@ Camera::Camera(const float width, const float height, const float fov) : Yaw(YAW
     this->Position = glm::vec3(0.0f, 0.0f, 3.0f);
     this->Front = glm::vec3(0.0f, 0.0f, -1.0f);
     this->Up = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->lastX = (float)SCR_WIDTH / 2.0;
+    this->lastY = (float)SCR_HEIGHT / 2.0;
     this->updateCameraVectors();
 }
 

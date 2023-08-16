@@ -20,30 +20,17 @@ const unsigned int SCR_HEIGHT = 600;
 Camera *camera = new Camera(SCR_WIDTH, SCR_HEIGHT, 45);
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
+glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.31f);
+glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
 VertexArray *cubeVAO,
             *lightcubeVAO,
             *surfaceVAO;
 
-glm::vec3 cubePositions[] = {
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    // glm::vec3( 2.0f,  5.0f, -15.0f),
-    // glm::vec3(-1.5f, -2.2f, -2.5f),
-    // glm::vec3(-3.8f, -2.0f, -12.3f),
-    // glm::vec3( 2.4f, -0.4f, -3.5f),
-    // glm::vec3(-1.7f,  3.0f, -7.5f),
-    // glm::vec3( 1.3f, -2.0f, -2.5f),
-    // glm::vec3( 1.5f,  2.0f, -2.5f),
-    // glm::vec3( 1.5f,  0.2f, -1.5f),
-    // glm::vec3(-1.3f,  1.0f, -1.5f)
-};
-
-glm::vec3 pointLightPositions[] = {
-    glm::vec3(0.7f, 0.2f, 2.0f),
-    glm::vec3(-1.8f, 0.1f, -2.4f),
-    // glm::vec3(-4.0f,  2.0f, -12.0f),
-    // glm::vec3( 0.0f,  0.0f, -3.0f)
-};
+glm::vec3 cubePositions[] = { glm::vec3(0.0f, 0.0f, 0.0f) };
+glm::vec3 pointLightPositions[] = { glm::vec3(0.7f, 0.2f, 2.0f) };
 
 void renderSchene(Shader *shader);
 void renderQuad();
@@ -56,6 +43,10 @@ void MouseCallBackWrapper(GLFWwindow *window, double xpos, double ypos){
 void ScrollCallBackWrapper(GLFWwindow *window, double xoffset, double yoffset){
     if (camera)
         return camera->ScrollCallBack(yoffset);
+}
+
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+    glViewport(0, 0, width, height);
 }
 
 int main(void){
@@ -75,6 +66,10 @@ int main(void){
     }
 
     glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, MouseCallBackWrapper);
+    glfwSetScrollCallback(window, ScrollCallBackWrapper);
+
     glewInit();
     printout_opengl_glsl_info();
 
@@ -143,8 +138,8 @@ int main(void){
     Texture *wood = new Texture("wood.png");
 
     // Shader *surface = new Shader("shaders/surface.vert", "shaders/surface.frag");
-    Shader *cube = new Shader("shaders/basic.vert", "shaders/basic.frag");
-    Shader *light = new Shader("shaders/light.vert", "shaders/light.frag");
+    // Shader *cube = new Shader("shaders/basic.vert", "shaders/basic.frag");
+    // Shader *light = new Shader("shaders/light.vert", "shaders/light.frag");
     Shader *simpleDepthShader = new Shader("shaders/shadow_mapping_depth.vert", "shaders/shadow_mapping_depth.frag");
     Shader *debugDepthQuad = new Shader("shaders/debug_quad.vert", "shaders/debug_quad_depth.frag");
 
@@ -181,10 +176,8 @@ int main(void){
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    float borderColor[] = {1.0, 1.0, 1.0, 1.0};
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     // attach depth texture as FBO's depth buffer
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
@@ -192,9 +185,8 @@ int main(void){
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.31f);
-    glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::mat4 projection, view;
+    float near_plane = 1.0f, far_plane = 7.5f;
 
     debugDepthQuad->use();
     debugDepthQuad->setInt("depthMap", 0);
@@ -203,6 +195,7 @@ int main(void){
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         float currentFrame = glfwGetTime();
@@ -210,18 +203,13 @@ int main(void){
         lastFrame = currentFrame;
 
         camera->ProcessInput(window, deltaTime);
-        glfwSetCursorPosCallback(window, MouseCallBackWrapper);
-        glfwSetScrollCallback(window, ScrollCallBackWrapper);
 
         // 1. render depth of scene to texture (from light's perspective)
         // --------------------------------------------------------------
-        glm::mat4 lightProjection, lightView;
-        glm::mat4 lightSpaceMatrix;
-        float near_plane = 1.0f, far_plane = 7.5f;
-        // lightProjection = glm::perspective(glm::radians(45.0f), (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT, near_plane, far_plane); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
-        lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-        lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-        lightSpaceMatrix = lightProjection * lightView;
+        glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+        glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+        glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
         // render scene from light's point of view
         simpleDepthShader->use();
         simpleDepthShader->setMatrix4("lightSpaceMatrix", lightSpaceMatrix);
@@ -230,7 +218,7 @@ int main(void){
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
         wood->Bind();
-        renderSchene(cube);
+        renderSchene(simpleDepthShader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // projection = glm::perspective(glm::radians(camera->GetZoom()), 800.0f / 600.0f, 0.1f, 100.0f);
@@ -258,8 +246,6 @@ int main(void){
     delete VBO;
     delete cubeVAO;
     delete lightcubeVAO;
-    delete cube;
-    delete light;
     delete layout;
 
     glfwTerminate();
@@ -268,41 +254,33 @@ int main(void){
 }
 
 void renderSchene(Shader *shader) {
+    // floor
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(7.0f));
-    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     shader->setMatrix4("model", model);
-
     surfaceVAO->Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    // cubes
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
+    model = glm::scale(model, glm::vec3(0.5f));
+    shader->setMatrix4("model", model);
+    cubeVAO->Bind();
     glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    // light->use();
-    // light->setMatrix4("view", view);
-    // light->setMatrix4("projection", projection);
-
-    // for (unsigned int i = 0; i < 2; i++)
-    // {
-    //     model = glm::mat4(1.0f);
-    //     model = glm::translate(model, pointLightPositions[i]);
-    //     model = glm::scale(model, glm::vec3(0.2f));
-    //     light->setMatrix4("model", model);
-    //     lightcubeVAO->Bind();
-    //     glDrawArrays(GL_TRIANGLES, 0, 36);
-    // }
-    for (unsigned int i = 0; i < 1; i++) {
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, cubePositions[i]);
-        float angle = 20.0f * i;
-        model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-        shader->setMatrix4("model", model);
-        cubeVAO->Bind();
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
+    model = glm::scale(model, glm::vec3(0.5f));
+    shader->setMatrix4("model", model);
+    cubeVAO->Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
+    model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+    model = glm::scale(model, glm::vec3(0.25));
+    shader->setMatrix4("model", model);
+    cubeVAO->Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
-unsigned int quadVAO = 0;
-unsigned int quadVBO;
 void renderQuad() {
     if (quadVAO == 0) {
         float quadVertices[] = {

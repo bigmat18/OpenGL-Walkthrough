@@ -12,15 +12,22 @@ Texture::Texture(const std::string &path) : rendererID(0),
 {
     stbi_set_flip_vertically_on_load(true);
     this->localBuffer = stbi_load(this->filePath.c_str(), &this->width, &this->height, &this->BPP, 4);
+    GLenum format = GL_RED;
+    if (this->BPP == 1)      format = GL_RED;
+    else if (this->BPP == 3) format = GL_RGB;
+    else if (this->BPP == 4) format = GL_RGBA;
+    else;
+
     glGenTextures(1, &this->rendererID);
     glBindTexture(GL_TEXTURE_2D, this->rendererID);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, this->width, this->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, this->localBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, this->width, this->height, 0, format, GL_UNSIGNED_BYTE, this->localBuffer);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     if(this->localBuffer) stbi_image_free(this->localBuffer);
