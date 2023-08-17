@@ -70,12 +70,11 @@ int main(void){
     glfwSetCursorPosCallback(window, MouseCallBackWrapper);
     glfwSetScrollCallback(window, ScrollCallBackWrapper);
 
-    glewInit();
-    printout_opengl_glsl_info();
-
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glewInit();
 
     glEnable(GL_DEPTH_TEST);
+    printout_opengl_glsl_info();
 
     float vertices[] = {
         // back face
@@ -135,7 +134,6 @@ int main(void){
 
     // Texture *container = new Texture("container2.png");
     // Texture *container_specular = new Texture("container2_specular.png");
-    Texture *wood = new Texture("wood.png");
 
     // Shader *surface = new Shader("shaders/surface.vert", "shaders/surface.frag");
     // Shader *cube = new Shader("shaders/basic.vert", "shaders/basic.frag");
@@ -147,7 +145,7 @@ int main(void){
                  *surfaceVBO = new VertexBuffer(surfaces, 8 * 6 * sizeof(float));
 
     cubeVAO = new VertexArray();
-    lightcubeVAO = new VertexArray();
+    // lightcubeVAO = new VertexArray();
     surfaceVAO = new VertexArray();
 
     VertexBufferLayout *layout = new VertexBufferLayout();
@@ -155,14 +153,16 @@ int main(void){
     layout->Push<float>(3);
     layout->Push<float>(2);
 
-    VertexBufferLayout *layoutSourface = new VertexBufferLayout();
-    layoutSourface->Push<float>(3);
-    layoutSourface->Push<float>(3);
-    layoutSourface->Push<float>(2);
+    // VertexBufferLayout *layoutSourface = new VertexBufferLayout();
+    // layoutSourface->Push<float>(3);
+    // layoutSourface->Push<float>(3);
+    // layoutSourface->Push<float>(2);
 
     cubeVAO->AddBuffer(*VBO, *layout);
-    lightcubeVAO->AddBuffer(*VBO, *layout);
-    surfaceVAO->AddBuffer(*surfaceVBO, *layoutSourface);
+    // lightcubeVAO->AddBuffer(*VBO, *layout);
+    surfaceVAO->AddBuffer(*surfaceVBO, *layout);
+
+    Texture *wood = new Texture("wood.png");
 
     // configure depth map FBO
     // -----------------------
@@ -185,7 +185,7 @@ int main(void){
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glm::mat4 projection, view;
+    // glm::mat4 projection, view;
     float near_plane = 1.0f, far_plane = 7.5f;
 
     debugDepthQuad->use();
@@ -195,19 +195,21 @@ int main(void){
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(window, true);
 
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        float currentFrame = glfwGetTime();
+        float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         camera->ProcessInput(window, deltaTime);
 
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         // 1. render depth of scene to texture (from light's perspective)
         // --------------------------------------------------------------
         glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-        glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+        glm::mat4 lightView = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f),
+                                          glm::vec3(0.0f, 0.0f, 0.0f),
+                                          glm::vec3(0.0f, 1.0f, 0.0f));
         glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
         // render scene from light's point of view
@@ -259,6 +261,7 @@ void renderSchene(Shader *shader) {
     shader->setMatrix4("model", model);
     surfaceVAO->Bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    
     // cubes
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
@@ -266,12 +269,16 @@ void renderSchene(Shader *shader) {
     shader->setMatrix4("model", model);
     cubeVAO->Bind();
     glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
     model = glm::scale(model, glm::vec3(0.5f));
     shader->setMatrix4("model", model);
     cubeVAO->Bind();
     glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
     model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
@@ -279,6 +286,7 @@ void renderSchene(Shader *shader) {
     shader->setMatrix4("model", model);
     cubeVAO->Bind();
     glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
 }
 
 void renderQuad() {
