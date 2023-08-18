@@ -17,21 +17,15 @@
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-Camera *camera = new Camera(SCR_WIDTH, SCR_HEIGHT, 45);
+Camera *camera = new Camera(SCR_WIDTH, SCR_HEIGHT, 45.0f);
+VertexArray *cubeVAO, *quadVAO, *surfaceVAO;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
-// glm::vec3 objectColor = glm::vec3(1.0f, 0.5f, 0.31f);
-// glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-VertexArray *cubeVAO,
-            *lightcubeVAO,
-            *surfaceVAO;
-
 glm::vec3 cubePositions[] = { glm::vec3(0.0f, 0.0f, 0.0f) };
 glm::vec3 pointLightPositions[] = { glm::vec3(0.7f, 0.2f, 2.0f) };
 
 void renderSchene(Shader *shader);
-void renderQuad();
 void MouseCallBackWrapper(GLFWwindow *window, double xpos, double ypos);
 void ScrollCallBackWrapper(GLFWwindow *window, double xoffset, double yoffset);
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -120,21 +114,26 @@ int main(void){
         25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 25.0f, 25.0f
     };
 
-    // Texture *container = new Texture("container2.png");
-    // Texture *container_specular = new Texture("container2_specular.png");
+    float quadVertices[] = {
+        // positions        // texture Coords
+        -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+    };
 
-    // Shader *surface = new Shader("shaders/surface.vert", "shaders/surface.frag");
-    // Shader *cube = new Shader("shaders/basic.vert", "shaders/basic.frag");
-    // Shader *light = new Shader("shaders/light.vert", "shaders/light.frag");
+
     Shader *simpleDepthShader = new Shader("shaders/shadow_mapping_depth.vert", "shaders/shadow_mapping_depth.frag");
     Shader *debugDepthQuad = new Shader("shaders/debug_quad.vert", "shaders/debug_quad_depth.frag");
-    Shader *shader = new Shader("shaders/shadow_mapping.vert", "shaders/shadow_mapping.frag");
+    Shader *shader = new Shader("shaders/basic.vert", "shaders/basic.frag");
+    Shader *light = new Shader("shaders/light.vert", "shaders/light.frag");
 
-    VertexBuffer *VBO = new VertexBuffer(vertices, 8 * 36 * sizeof(float)),
-                 *surfaceVBO = new VertexBuffer(surfaces, 8 * 6 * sizeof(float));
+    VertexBuffer *cubeVBO = new VertexBuffer(vertices, 8 * 36 * sizeof(float)),
+                 *surfaceVBO = new VertexBuffer(surfaces, 8 * 6 * sizeof(float)),
+                 *quadVBO = new VertexBuffer(quadVertices, 20 * sizeof(float));
 
     cubeVAO = new VertexArray();
-    // lightcubeVAO = new VertexArray();
+    quadVAO = new VertexArray();
     surfaceVAO = new VertexArray();
 
     VertexBufferLayout *layout = new VertexBufferLayout();
@@ -142,14 +141,9 @@ int main(void){
     layout->Push<float>(3);
     layout->Push<float>(2);
 
-    // VertexBufferLayout *layoutSourface = new VertexBufferLayout();
-    // layoutSourface->Push<float>(3);
-    // layoutSourface->Push<float>(3);
-    // layoutSourface->Push<float>(2);
-
-    cubeVAO->AddBuffer(*VBO, *layout);
-    // lightcubeVAO->AddBuffer(*VBO, *layout);
+    cubeVAO->AddBuffer(*cubeVBO, *layout);
     surfaceVAO->AddBuffer(*surfaceVBO, *layout);
+    quadVAO->AddBuffer(*quadVBO, *layout);
 
     Texture *wood = new Texture("wood.png");
 
@@ -158,6 +152,7 @@ int main(void){
     const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
     unsigned int depthMapFBO;
     glGenFramebuffers(1, &depthMapFBO);
+
     // create depth texture
     unsigned int depthMap;
     glGenTextures(1, &depthMap);
@@ -169,6 +164,7 @@ int main(void){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
     // attach depth texture as FBO's depth buffer
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
@@ -176,12 +172,12 @@ int main(void){
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // glm::mat4 projection, view;
     float near_plane = 1.0f, far_plane = 7.5f;
+    int sizex, sizey;
 
     shader->use();
-    shader->setInt("diffuseTexture", 0);
     shader->setInt("shadowMap", 1);
+
     debugDepthQuad->use();
     debugDepthQuad->setInt("depthMap", 0);
 
@@ -195,7 +191,6 @@ int main(void){
 
         camera->ProcessInput(window, deltaTime);
 
-        int sizex, sizey;
         glfwGetFramebufferSize(window, &sizex, &sizey);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -204,6 +199,7 @@ int main(void){
         // 1. render depth of scene to texture (from light's perspective)
         // --------------------------------------------------------------
         glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+        // glm::mat4 lightProjection = glm::perspective<float>(glm::radians(45.0f), 1.0f, 2.0f, 50.0f);
         glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
         glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
@@ -211,7 +207,6 @@ int main(void){
         simpleDepthShader->use();
         simpleDepthShader->setMatrix4("lightSpaceMatrix", lightSpaceMatrix);
 
-        // glCullFace(GL_FRONT);
         glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
             glClear(GL_DEPTH_BUFFER_BIT);
@@ -222,11 +217,6 @@ int main(void){
         // reset viewport
         glViewport(0, 0, sizex, sizey);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // glCullFace(GL_BACK);
-
-        // projection = glm::perspective(glm::radians(camera->GetZoom()), 800.0f / 600.0f, 0.1f, 100.0f);
-        // view = camera->GetViewMatrix();
-        // cube->use();
 
         // 2. render scene as normal using the generated depth/shadow map
         // --------------------------------------------------------------
@@ -235,35 +225,56 @@ int main(void){
         glm::mat4 view = camera->GetViewMatrix();
         shader->setMatrix4("projection", projection);
         shader->setMatrix4("view", view);
+
+        shader->setFloat("material.shininess", 32.0f);
+        shader->setInt("material.diffuse", 0);
+        shader->setInt("material.specular", 1);
+
+        // directional light
+        shader->setVec3("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+        shader->setVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
+        shader->setVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
+        shader->setVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+        // point light 1
+        shader->setVec3("pointLights[0].position", lightPos);
+        shader->setVec3("pointLights[0].ambient", glm::vec3(0.05f, 0.05f, 0.05f));
+        shader->setVec3("pointLights[0].diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
+        shader->setVec3("pointLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        shader->setFloat("pointLights[0].constant", 1.0f);
+        shader->setFloat("pointLights[0].linear", 0.09f);
+        shader->setFloat("pointLights[0].quadratic", 0.032f);
+
         // set light uniforms
         shader->setVec3("viewPos", camera->GetPosizion());
-        shader->setVec3("lightPos", lightPos);
         shader->setMatrix4("lightSpaceMatrix", lightSpaceMatrix);
         wood->Bind(0);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, depthMap);
         renderSchene(shader);
 
+        light->use();
+        light->setMatrix4("projection", projection);
+        light->setMatrix4("view", view);
+
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), lightPos);
+        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+        light->setMatrix4("model", model);
+        cubeVAO->Bind();
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+
         // render Depth map to quad for visual debugging
         // ---------------------------------------------
-        debugDepthQuad->use();
-        debugDepthQuad->setFloat("near_plane", near_plane);
-        debugDepthQuad->setFloat("far_plane", far_plane);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
+        // debugDepthQuad->use();
+        // debugDepthQuad->setFloat("near_plane", near_plane);
+        // debugDepthQuad->setFloat("far_plane", far_plane);
+        // glActiveTexture(GL_TEXTURE0);
+        // glBindTexture(GL_TEXTURE_2D, depthMap);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-
-    delete VBO;
-    delete cubeVAO;
-    delete lightcubeVAO;
-    delete layout;
-
     glfwTerminate();
-    
     return 0;
 }
 
@@ -298,33 +309,6 @@ void renderSchene(Shader *shader) {
     shader->setMatrix4("model", model);
     cubeVAO->Bind();
     glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
-}
-
-unsigned int quadVAO = 0;
-unsigned int quadVBO;
-void renderQuad() {
-    if (quadVAO == 0) {
-        float quadVertices[] = {
-            // positions        // texture Coords
-            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-             1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-        };
-        // setup plane VAO
-        glGenVertexArrays(1, &quadVAO);
-        glGenBuffers(1, &quadVBO);
-        glBindVertexArray(quadVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    }
-    glBindVertexArray(quadVAO);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
 }
 
