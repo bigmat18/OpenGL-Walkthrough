@@ -12,11 +12,6 @@ Texture::Texture(const std::string &path) : rendererID(0),
 {
     stbi_set_flip_vertically_on_load(true);
     this->localBuffer = stbi_load(this->filePath.c_str(), &this->width, &this->height, &this->BPP, 4);
-    GLenum format;
-    if (this->BPP == 1)      format = GL_RED;
-    else if (this->BPP == 3) format = GL_RGB;
-    else if (this->BPP == 4) format = GL_RGBA;
-    else;
 
     glGenTextures(1, &this->rendererID);
     glBindTexture(GL_TEXTURE_2D, this->rendererID);

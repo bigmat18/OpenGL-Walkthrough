@@ -193,6 +193,9 @@ int main(void){
 
         camera->ProcessInput(window, deltaTime);
 
+        int sizex, sizey;
+        glfwGetFramebufferSize(window, &sizex, &sizey);
+
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -208,21 +211,21 @@ int main(void){
 
         glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-        glClear(GL_DEPTH_BUFFER_BIT);
-        wood->Bind(0);
-        renderSchene(simpleDepthShader);
+            glClear(GL_DEPTH_BUFFER_BIT);
+            wood->Bind(0);
+            renderSchene(simpleDepthShader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // reset viewport
-        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        glViewport(0, 0, sizex, sizey);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // projection = glm::perspective(glm::radians(camera->GetZoom()), 800.0f / 600.0f, 0.1f, 100.0f);
         // view = camera->GetViewMatrix();
         // cube->use();
 
-        // render Depth map to quad for visual debugging
-        // ---------------------------------------------
+        // 2. render scene as normal using the generated depth/shadow map
+        // --------------------------------------------------------------
         shader->use();
         glm::mat4 projection = glm::perspective(glm::radians(camera->GetZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera->GetViewMatrix();
@@ -237,11 +240,13 @@ int main(void){
         glBindTexture(GL_TEXTURE_2D, depthMap);
         renderSchene(shader);
 
-        debugDepthQuad->use();
-        debugDepthQuad->setFloat("near_plane", near_plane);
-        debugDepthQuad->setFloat("far_plane", far_plane);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
+        // render Depth map to quad for visual debugging
+        // ---------------------------------------------
+        // debugDepthQuad->use();
+        // debugDepthQuad->setFloat("near_plane", near_plane);
+        // debugDepthQuad->setFloat("far_plane", far_plane);
+        // glActiveTexture(GL_TEXTURE0);
+        // glBindTexture(GL_TEXTURE_2D, depthMap);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
