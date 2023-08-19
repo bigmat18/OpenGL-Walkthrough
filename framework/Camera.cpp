@@ -14,7 +14,7 @@ Camera::Camera(const float width, const float height, const float fov) : Yaw(YAW
                                                                          Pitch(PITCH),
                                                                          MovementSpeed(SPEED),
                                                                          MouseSensitivity(SENSITIVITY),
-                                                                         Zoom(ZOOM),
+                                                                         Zoom(fov),
                                                                          init(false)
 {
     this->Position = glm::vec3(0.0f, 0.0f, 3.0f);

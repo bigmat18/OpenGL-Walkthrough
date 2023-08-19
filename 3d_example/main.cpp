@@ -22,8 +22,6 @@ VertexArray *cubeVAO, *quadVAO, *surfaceVAO;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
-glm::vec3 cubePositions[] = { glm::vec3(0.0f, 0.0f, 0.0f) };
-glm::vec3 pointLightPositions[] = { glm::vec3(0.7f, 0.2f, 2.0f) };
 
 void renderSchene(Shader *shader);
 void MouseCallBackWrapper(GLFWwindow *window, double xpos, double ypos);
@@ -146,6 +144,8 @@ int main(void){
     quadVAO->AddBuffer(*quadVBO, *layout);
 
     Texture *wood = new Texture("wood.png");
+    Texture *container1 = new Texture("container2.png");
+    Texture *container2 = new Texture("container2_specular.png");
 
     // configure depth map FBO
     // -----------------------
@@ -175,11 +175,8 @@ int main(void){
     float near_plane = 1.0f, far_plane = 7.5f;
     int sizex, sizey;
 
-    shader->use();
-    shader->setInt("shadowMap", 1);
-
-    debugDepthQuad->use();
-    debugDepthQuad->setInt("depthMap", 0);
+    // debugDepthQuad->use();
+    // debugDepthQuad->setInt("depthMap", 0);
 
     while (!glfwWindowShouldClose(window)){
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -210,7 +207,6 @@ int main(void){
         glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
             glClear(GL_DEPTH_BUFFER_BIT);
-            wood->Bind(0);
             renderSchene(simpleDepthShader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -227,14 +223,15 @@ int main(void){
         shader->setMatrix4("view", view);
 
         shader->setFloat("material.shininess", 32.0f);
+        shader->setInt("shadowMap", 2);
         shader->setInt("material.diffuse", 0);
         shader->setInt("material.specular", 1);
 
         // directional light
-        shader->setVec3("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
-        shader->setVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
-        shader->setVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
-        shader->setVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+        shader->setVec3("dirLight.direction", (glm::vec3){-0.2f, -1.0f, -0.3f});
+        shader->setVec3("dirLight.ambient", (glm::vec3){0.05f, 0.05f, 0.05f});
+        shader->setVec3("dirLight.diffuse", (glm::vec3){0.4f, 0.4f, 0.4f});
+        shader->setVec3("dirLight.specular", (glm::vec3){0.5f, 0.5f, 0.5f});
         // point light 1
         shader->setVec3("pointLights[0].position", lightPos);
         shader->setVec3("pointLights[0].ambient", glm::vec3(0.05f, 0.05f, 0.05f));
@@ -247,8 +244,9 @@ int main(void){
         // set light uniforms
         shader->setVec3("viewPos", camera->GetPosizion());
         shader->setMatrix4("lightSpaceMatrix", lightSpaceMatrix);
-        wood->Bind(0);
-        glActiveTexture(GL_TEXTURE1);
+        container1->Bind(0);
+        container2->Bind(1);
+        glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, depthMap);
         renderSchene(shader);
 
