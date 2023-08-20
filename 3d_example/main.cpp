@@ -151,7 +151,8 @@ int main(void){
     Texture *container1 = new Texture("container2.png");
     Texture *container2 = new Texture("container2_specular.png");
 
-    FrameBuffer *frame = new FrameBuffer();
+    FrameBuffer *frame1 = new FrameBuffer();
+    FrameBuffer *frame2 = new FrameBuffer();
 
     float near_plane = 1.0f, far_plane = 7.5f;
 
@@ -168,6 +169,8 @@ int main(void){
 
         camera->ProcessInput(window, deltaTime);
 
+        // lightPos[0] = glm::vec3(glm::sin(glfwGetTime()) * 2.0f, 4.0f, glm::cos(glfwGetTime()) * 2.0f);
+        // lightPos[1] = glm::vec3(glm::sin(glfwGetTime()) * -3.0f, 2.0f, glm::cos(glfwGetTime()) * 1.0f);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -177,22 +180,25 @@ int main(void){
 
         // 1. render depth of scene to texture (from light's perspective)
         // --------------------------------------------------------------
-        std::vector<glm::mat4> lightSpaceMatrixs;
-        for(int i = 0; i < 1; i++) {
-            glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-            // glm::mat4 lightProjection = glm::perspective<float>(glm::radians(45.0f), 1.0f, 2.0f, 50.0f);
-            glm::mat4 lightView = glm::lookAt(lightPos[i], glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-            glm::mat4 lightSpaceMatrix = lightProjection * lightView;
-            lightSpaceMatrixs.push_back(lightSpaceMatrix);
+        // glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+        glm::mat4 lightProjection = glm::perspective<float>(glm::radians(45.0f), 1.0f, 2.0f, 50.0f);
+        glm::mat4 lightView1 = glm::lookAt(lightPos[0], glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+        glm::mat4 lightSpaceMatrix1 = lightProjection * lightView1;
 
-            // render scene from light's point of view
-            simpleDepthShader->use();
-            simpleDepthShader->setMatrix4("lightSpaceMatrix", lightSpaceMatrix);
+        // render scene from light's point of view
+        simpleDepthShader->use();
 
-            frame->BindFrame(window);
-            renderSchene(simpleDepthShader);
-            frame->UnbindFrame();
-        }
+        simpleDepthShader->setMatrix4("lightSpaceMatrix", lightSpaceMatrix1);
+        frame1->BindFrame(window);
+        renderSchene(simpleDepthShader);
+        frame1->UnbindFrame();
+
+        glm::mat4 lightView2 = glm::lookAt(lightPos[1], glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+        glm::mat4 lightSpaceMatrix2 = lightProjection * lightView2;
+        simpleDepthShader->setMatrix4("lightSpaceMatrix", lightSpaceMatrix2);
+        frame2->BindFrame(window);
+        renderSchene(simpleDepthShader);
+        frame2->UnbindFrame();
 
         // 2. render scene as normal using the generated depth/shadow map
         // --------------------------------------------------------------
@@ -201,9 +207,10 @@ int main(void){
         shader->setMatrix4("view", view);
 
         shader->setFloat("material.shininess", 32.0f);
-        shader->setInt("shadowMap", 2);
         shader->setInt("material.diffuse", 0);
         shader->setInt("material.specular", 1);
+        shader->setInt("shadowMap1", 2);
+        shader->setInt("shadowMap2", 3);
 
         // directional light
         shader->setVec3("dirLight.direction", (glm::vec3){-0.2f, -1.0f, -0.3f});
@@ -225,11 +232,13 @@ int main(void){
         // set light uniforms
         shader->setVec3("viewPos", camera->GetPosition());
 
-        for(int i = 0; i<lightSpaceMatrixs.size(); i++)
-            shader->setMatrix4(std::string("lightSpaceMatrixs[") + std::to_string(i) + std::string("]"), lightSpaceMatrixs[i]);
+        shader->setMatrix4(std::string("lightSpaceMatrixs[") + std::to_string(0) + std::string("]"), lightSpaceMatrix1);
+        shader->setMatrix4(std::string("lightSpaceMatrixs[") + std::to_string(1) + std::string("]"), lightSpaceMatrix2);
+
         container1->Bind(0);
         container2->Bind(1);
-        frame->BindTex(2);
+        frame1->BindTex(2);
+        frame2->BindTex(3);
         renderSchene(shader);
 
         light->use();
