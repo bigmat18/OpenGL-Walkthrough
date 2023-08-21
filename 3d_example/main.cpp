@@ -169,8 +169,8 @@ int main(void){
 
         camera->ProcessInput(window, deltaTime);
 
-        // lightPos[0] = glm::vec3(glm::sin(glfwGetTime()) * 2.0f, 4.0f, glm::cos(glfwGetTime()) * 2.0f);
-        // lightPos[1] = glm::vec3(glm::sin(glfwGetTime()) * -3.0f, 2.0f, glm::cos(glfwGetTime()) * 1.0f);
+        lightPos[0] = glm::vec3(glm::sin(glfwGetTime()) * 2.0f, 4.0f, glm::cos(glfwGetTime()) * 2.0f);
+        lightPos[1] = glm::vec3(glm::sin(glfwGetTime()) * -3.0f, 2.0f, glm::cos(glfwGetTime()) * 1.0f);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -180,8 +180,8 @@ int main(void){
 
         // 1. render depth of scene to texture (from light's perspective)
         // --------------------------------------------------------------
-        // glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-        glm::mat4 lightProjection = glm::perspective<float>(glm::radians(45.0f), 1.0f, 2.0f, 50.0f);
+        glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+        // glm::mat4 lightProjection = glm::perspective<float>(glm::radians(45.0f), 1.0f, 2.0f, 50.0f);
         glm::mat4 lightView1 = glm::lookAt(lightPos[0], glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
         glm::mat4 lightSpaceMatrix1 = lightProjection * lightView1;
 
@@ -197,6 +197,10 @@ int main(void){
         glm::mat4 lightSpaceMatrix2 = lightProjection * lightView2;
         simpleDepthShader->setMatrix4("lightSpaceMatrix", lightSpaceMatrix2);
         frame2->BindFrame(window);
+        glm::mat4 model = glm::mat4(1.0f);
+        simpleDepthShader->setMatrix4("model", model);
+        surfaceVAO->Bind();
+        glDrawArrays(GL_TRIANGLES, 0, 6);
         renderSchene(simpleDepthShader);
         frame2->UnbindFrame();
 
@@ -234,6 +238,15 @@ int main(void){
 
         shader->setMatrix4(std::string("lightSpaceMatrixs[") + std::to_string(0) + std::string("]"), lightSpaceMatrix1);
         shader->setMatrix4(std::string("lightSpaceMatrixs[") + std::to_string(1) + std::string("]"), lightSpaceMatrix2);
+        
+        wood->Bind(0);
+        frame1->BindTex(2);
+        frame2->BindTex(3);
+
+        model = glm::mat4(1.0f);
+        shader->setMatrix4("model", model);
+        surfaceVAO->Bind();
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         container1->Bind(0);
         container2->Bind(1);
@@ -272,9 +285,6 @@ int main(void){
 void renderSchene(Shader *shader) {
     // floor
     glm::mat4 model = glm::mat4(1.0f);
-    shader->setMatrix4("model", model);
-    surfaceVAO->Bind();
-    glDrawArrays(GL_TRIANGLES, 0, 6);
     
     // cubes
     model = glm::mat4(1.0f);
