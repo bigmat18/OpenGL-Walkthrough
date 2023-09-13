@@ -8,12 +8,12 @@
 #include <sstream>
 #include <string>
 
-#include "../libs/Cube.h"
-#include "../libs/debugging.h"
-#include "../libs/Camera.h"
-#include "../libs/Texture2D.h"
-#include "../libs/Shader.h"
-#include "../libs/FrameBuffer.h"
+#include "libs/Cube.h"
+#include "libs/debugging.h"
+#include "libs/Camera.h"
+#include "libs/Texture2D.h"
+#include "libs/Shader.h"
+#include "libs/FrameBuffer.h"
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -125,9 +125,9 @@ int main(void){
     };
 
 
-    Shader *simpleDepthShader = new Shader("../shaders/shadow_mapping_depth.vert", "../shaders/shadow_mapping_depth.frag");
-    Shader *shader = new Shader("../shaders/basic.vert", "../shaders/basic.frag");
-    Shader *light = new Shader("../shaders/light.vert", "../shaders/light.frag");
+    Shader *simpleDepthShader = new Shader("shaders/shadow_mapping_depth.vert", "shaders/shadow_mapping_depth.frag");
+    Shader *shader = new Shader("shaders/basic.vert", "shaders/basic.frag");
+    Shader *light = new Shader("shaders/light.vert", "shaders/light.frag");
 
     VertexBuffer *cubeVBO = new VertexBuffer(vertices, 8 * 36 * sizeof(float)),
                  *surfaceVBO = new VertexBuffer(surfaces, 8 * 6 * sizeof(float)),
@@ -146,9 +146,9 @@ int main(void){
     surfaceVAO->AddBuffer(*surfaceVBO, *layout);
     quadVAO->AddBuffer(*quadVBO, *layout);
 
-    Texture2D *wood = new Texture2D("wood.png");
-    Texture2D *container1 = new Texture2D("container2.png");
-    Texture2D *container2 = new Texture2D("container2_specular.png");
+    Texture2D *wood = new Texture2D("images/wood.png");
+    Texture2D *container1 = new Texture2D("images/container2.png");
+    Texture2D *container2 = new Texture2D("images/container2_specular.png");
 
     FrameBuffer *frame1 = new FrameBuffer();
     FrameBuffer *frame2 = new FrameBuffer();
@@ -262,14 +262,6 @@ int main(void){
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glBindVertexArray(0);
         }
-
-        // render Depth map to quad for visual debugging
-        // ---------------------------------------------
-        // debugDepthQuad->use();
-        // debugDepthQuad->setFloat("near_plane", near_plane);
-        // debugDepthQuad->setFloat("far_plane", far_plane);
-        // glActiveTexture(GL_TEXTURE0);
-        // glBindTexture(GL_TEXTURE_2D, depthMap);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
