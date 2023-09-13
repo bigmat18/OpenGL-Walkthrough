@@ -14,7 +14,7 @@ class Texture3D : public Texture {
         Texture3D(const std::vector<std::string> &paths);
         ~Texture3D();
 
-        void Bind(GLuint slot) const override;
+        void Bind(GLuint slot = 0) const override;
         void Unbind() const override;
 };
 

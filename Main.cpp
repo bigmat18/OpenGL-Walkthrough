@@ -12,6 +12,7 @@
 #include "libs/debugging.h"
 #include "libs/Camera.h"
 #include "libs/Texture2D.h"
+#include "libs/Texture3D.h"
 #include "libs/Shader.h"
 #include "libs/FrameBuffer.h"
 
@@ -19,7 +20,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 Camera *camera = new Camera(SCR_WIDTH, SCR_HEIGHT, 45.0f);
-VertexArray *cubeVAO, *quadVAO, *surfaceVAO;
+VertexArray *cubeVAO, *quadVAO, *surfaceVAO, *skyboxVAO;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 glm::vec3 lightPos[] = {
@@ -59,6 +60,51 @@ int main(void){
 
     glEnable(GL_DEPTH_TEST);
     printout_opengl_glsl_info();
+
+    float skyboxVertices[] = {
+        // positions
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+
+        -1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f
+    };
 
     float vertices[] = {
         // back face
@@ -128,27 +174,44 @@ int main(void){
     Shader *simpleDepthShader = new Shader("shaders/shadow_mapping_depth.vert", "shaders/shadow_mapping_depth.frag");
     Shader *shader = new Shader("shaders/basic.vert", "shaders/basic.frag");
     Shader *light = new Shader("shaders/light.vert", "shaders/light.frag");
+    Shader *skybox = new Shader("shaders/skybox.vert", "shaders/skybox.frag");
 
     VertexBuffer *cubeVBO = new VertexBuffer(vertices, 8 * 36 * sizeof(float)),
                  *surfaceVBO = new VertexBuffer(surfaces, 8 * 6 * sizeof(float)),
-                 *quadVBO = new VertexBuffer(quadVertices, 20 * sizeof(float));
+                 *quadVBO = new VertexBuffer(quadVertices, 20 * sizeof(float)),
+                 *skyboxVBO = new VertexBuffer(skyboxVertices, 3 * 36 * sizeof(float));
 
     cubeVAO = new VertexArray();
     quadVAO = new VertexArray();
     surfaceVAO = new VertexArray();
+    skyboxVAO = new VertexArray();
 
     VertexBufferLayout *layout = new VertexBufferLayout();
     layout->Push<float>(3);
     layout->Push<float>(3);
     layout->Push<float>(2);
 
+    VertexBufferLayout *skyboxLayout = new VertexBufferLayout();
+    skyboxLayout->Push<float>(3);
+
     cubeVAO->AddBuffer(*cubeVBO, *layout);
     surfaceVAO->AddBuffer(*surfaceVBO, *layout);
     quadVAO->AddBuffer(*quadVBO, *layout);
+    skyboxVAO->AddBuffer(*skyboxVBO, *skyboxLayout);
+
+    std::vector<std::string> faces{
+        "images/wood.png",
+        "images/wood.png",
+        "images/wood.png",
+        "images/wood.png",
+        "images/wood.png",
+        "images/wood.png"
+    };
 
     Texture2D *wood = new Texture2D("images/wood.png");
     Texture2D *container1 = new Texture2D("images/container2.png");
     Texture2D *container2 = new Texture2D("images/container2_specular.png");
+    Texture3D *maps = new Texture3D(faces);
 
     FrameBuffer *frame1 = new FrameBuffer();
     FrameBuffer *frame2 = new FrameBuffer();
@@ -184,15 +247,22 @@ int main(void){
         simpleDepthShader->use();
 
         simpleDepthShader->setMatrix4("lightSpaceMatrix", lightSpaceMatrix1);
+
         frame1->BindFrame(window);
+        glm::mat4 model = glm::mat4(1.0f);
+        simpleDepthShader->setMatrix4("model", model);
+        surfaceVAO->Bind();
+        glDrawArrays(GL_TRIANGLES, 0, 6);
         renderSchene(simpleDepthShader);
         frame1->UnbindFrame();
 
         glm::mat4 lightView2 = glm::lookAt(lightPos[1], glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
         glm::mat4 lightSpaceMatrix2 = lightProjection * lightView2;
+
         simpleDepthShader->setMatrix4("lightSpaceMatrix", lightSpaceMatrix2);
+
         frame2->BindFrame(window);
-        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::mat4(1.0f);
         simpleDepthShader->setMatrix4("model", model);
         surfaceVAO->Bind();
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -263,6 +333,16 @@ int main(void){
             glBindVertexArray(0);
         }
 
+        glDepthFunc(GL_LEQUAL);
+        skybox->use();
+        skybox->setMatrix4("projection", projection);
+        skybox->setMatrix4("view", glm::mat4(glm::mat3(camera->GetViewMatrix())));
+        maps->Bind(0);
+        skyboxVAO->Bind();
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -271,7 +351,6 @@ int main(void){
 }
 
 void renderSchene(Shader *shader) {
-    // floor
     glm::mat4 model = glm::mat4(1.0f);
     
     // cubes

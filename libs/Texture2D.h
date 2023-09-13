@@ -13,7 +13,7 @@ class Texture2D : public Texture {
         Texture2D(const std::string &path);
         ~Texture2D();
 
-        void Bind(GLuint slot) const override;
+        void Bind(GLuint slot = 0) const override;
         void Unbind() const override;
 };
 
