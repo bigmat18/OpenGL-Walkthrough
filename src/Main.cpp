@@ -8,12 +8,12 @@
 #include <sstream>
 #include <string>
 
-#include "../framework/Cube.h"
-#include "../framework/debugging.h"
-#include "../framework/Camera.h"
-#include "../framework/Texture.h"
-#include "../framework/Shader.h"
-#include "../framework/FrameBuffer.h"
+#include "../libs/Cube.h"
+#include "../libs/debugging.h"
+#include "../libs/Camera.h"
+#include "../libs/Texture2D.h"
+#include "../libs/Shader.h"
+#include "../libs/FrameBuffer.h"
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -125,10 +125,9 @@ int main(void){
     };
 
 
-    Shader *simpleDepthShader = new Shader("shaders/shadow_mapping_depth.vert", "shaders/shadow_mapping_depth.frag");
-    Shader *debugDepthQuad = new Shader("shaders/debug_quad.vert", "shaders/debug_quad_depth.frag");
-    Shader *shader = new Shader("shaders/basic.vert", "shaders/basic.frag");
-    Shader *light = new Shader("shaders/light.vert", "shaders/light.frag");
+    Shader *simpleDepthShader = new Shader("../shaders/shadow_mapping_depth.vert", "../shaders/shadow_mapping_depth.frag");
+    Shader *shader = new Shader("../shaders/basic.vert", "../shaders/basic.frag");
+    Shader *light = new Shader("../shaders/light.vert", "../shaders/light.frag");
 
     VertexBuffer *cubeVBO = new VertexBuffer(vertices, 8 * 36 * sizeof(float)),
                  *surfaceVBO = new VertexBuffer(surfaces, 8 * 6 * sizeof(float)),
@@ -147,17 +146,14 @@ int main(void){
     surfaceVAO->AddBuffer(*surfaceVBO, *layout);
     quadVAO->AddBuffer(*quadVBO, *layout);
 
-    Texture *wood = new Texture("wood.png");
-    Texture *container1 = new Texture("container2.png");
-    Texture *container2 = new Texture("container2_specular.png");
+    Texture2D *wood = new Texture2D("wood.png");
+    Texture2D *container1 = new Texture2D("container2.png");
+    Texture2D *container2 = new Texture2D("container2_specular.png");
 
     FrameBuffer *frame1 = new FrameBuffer();
     FrameBuffer *frame2 = new FrameBuffer();
 
     float near_plane = 1.0f, far_plane = 7.5f;
-
-    // debugDepthQuad->use();
-    // debugDepthQuad->setInt("depthMap", 0);
 
     while (!glfwWindowShouldClose(window)){
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -181,7 +177,6 @@ int main(void){
         // 1. render depth of scene to texture (from light's perspective)
         // --------------------------------------------------------------
         glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-        // glm::mat4 lightProjection = glm::perspective<float>(glm::radians(45.0f), 1.0f, 2.0f, 50.0f);
         glm::mat4 lightView1 = glm::lookAt(lightPos[0], glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
         glm::mat4 lightSpaceMatrix1 = lightProjection * lightView1;
 
@@ -240,6 +235,7 @@ int main(void){
         shader->setMatrix4(std::string("lightSpaceMatrixs[") + std::to_string(1) + std::string("]"), lightSpaceMatrix2);
         
         wood->Bind(0);
+        wood->Bind(1);
         frame1->BindTex(2);
         frame2->BindTex(3);
 
