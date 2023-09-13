@@ -1,9 +1,13 @@
 CC = g++
-CFLAGS = -std=c++17 -Wall -O2 -g
+CFLAGS = -std=c++17 -Wall -g
+LFLAGS = -lglfw -lGLEW -framework OpenGL
 
 SRC_DIR = .
 LIB_DIR := ./libs
 BUILD_DIR := ./build
+
+# ensure build directory exists
+$(shell mkdir -p $(BUILD_DIR))
 
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
 LIB_FILES := $(wildcard $(LIB_DIR)/*.cpp)
@@ -22,12 +26,15 @@ all: $(EXE_FILES)
 
 # Build executable targets
 $(EXE_FILES): % : $(BUILD_DIR)/%.o $(LIB_OBJ_FILES)
-	$(CC) $(CFLAGS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $^ -o $@ -framework OpenGL
+	$(CC) $(CFLAGS) $(LFLAGS) $^ -o $@
 
 # Build object files from source files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CC) $(CFLAGS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) -c $< -o $@ -framework OpenGL
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Build object files from library source files
 $(BUILD_DIR)/%.o: $(LIB_DIR)/%.cpp
-	$(CC) $(CFLAGS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) -c $< -o $@ -framework OpenGL
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -rf $(BUILD_DIR)/* $(EXE_FILES)
