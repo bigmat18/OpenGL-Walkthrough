@@ -6,7 +6,7 @@
 
 class FrameBuffer {
     public:
-        FrameBuffer();
+        FrameBuffer(bool m_isCube = false);
         ~FrameBuffer();
 
         void BindFrame(GLFWwindow *window);
@@ -19,6 +19,7 @@ class FrameBuffer {
         GLuint m_width, m_height;
         GLuint m_FBO, m_depth;
         GLint m_sizeX, m_sizeY;
+        bool m_isCube;
 };
 
 

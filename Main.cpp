@@ -200,12 +200,12 @@ int main(void){
     skyboxVAO->AddBuffer(*skyboxVBO, *skyboxLayout);
 
     std::vector<std::string> faces{
-        "images/wood.png",
-        "images/wood.png",
-        "images/wood.png",
-        "images/wood.png",
-        "images/wood.png",
-        "images/wood.png"
+        "images/right.jpg",
+        "images/left.jpg",
+        "images/top.jpg",
+        "images/bottom.jpg",
+        "images/front.jpg",
+        "images/back.jpg"
     };
 
     Texture2D *wood = new Texture2D("images/wood.png");
