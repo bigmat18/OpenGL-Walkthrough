@@ -153,13 +153,13 @@ int main(void){
 
     float surfaces[] = {
         // positions            // normals         // texcoords
-        25.0f, -0.5f, 25.0f, 0.0f, 1.0f, 0.0f, 25.0f, 0.0f,
+        25.0f, -0.5f, 25.0f, 0.0f, 1.0f, 0.0f, 15.0f, 0.0f,
         -25.0f, -0.5f, 25.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-        -25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 0.0f, 25.0f,
+        -25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 0.0f, 15.0f,
 
-        25.0f, -0.5f, 25.0f, 0.0f, 1.0f, 0.0f, 25.0f, 0.0f,
-        -25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 0.0f, 25.0f,
-        25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 25.0f, 25.0f
+        25.0f, -0.5f, 25.0f, 0.0f, 1.0f, 0.0f, 15.0f, 0.0f,
+        -25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 0.0f, 15.0f,
+        25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 15.0f, 15.0f
     };
 
     float quadVertices[] = {
@@ -208,7 +208,7 @@ int main(void){
         "images/back.jpg"
     };
 
-    Texture2D *wood = new Texture2D("images/wood.png");
+    Texture2D *wood = new Texture2D("images/brickwall.jpeg");
     Texture2D *container1 = new Texture2D("images/container2.png");
     Texture2D *container2 = new Texture2D("images/container2_specular.png");
     Texture3D *maps = new Texture3D(faces);
@@ -283,15 +283,15 @@ int main(void){
 
         // directional light
         shader->setVec3("dirLight.direction", (glm::vec3){-0.2f, -1.0f, -0.3f});
-        shader->setVec3("dirLight.ambient", (glm::vec3){0.05f, 0.05f, 0.05f});
-        shader->setVec3("dirLight.diffuse", (glm::vec3){0.4f, 0.4f, 0.4f});
-        shader->setVec3("dirLight.specular", (glm::vec3){0.5f, 0.5f, 0.5f});
+        shader->setVec3("dirLight.ambient", (glm::vec3){0.3f, 0.4f, 0.55f});
+        shader->setVec3("dirLight.diffuse", (glm::vec3){0.3f, 0.4f, 0.55f});
+        shader->setVec3("dirLight.specular", (glm::vec3){0.5f, 0.5f, 0.7f});
 
         // point light
         for (int i = 0; i < 2; i++) {
             shader->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].position"), lightPos[i]);
-            shader->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].ambient"), (glm::vec3){0.05f, 0.05f, 0.05f});
-            shader->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].diffuse"), (glm::vec3){0.8f, 0.8f, 0.8f});
+            shader->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].ambient"), (glm::vec3){0.3f, 0.4f, 0.55f});
+            shader->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].diffuse"), (glm::vec3){0.50f, 0.50f, 0.50f});
             shader->setVec3(std::string("pointLights[") + std::to_string(i) + std::string("].specular"), (glm::vec3){1.0f, 1.0f, 1.0f});
             shader->setFloat(std::string("pointLights[") + std::to_string(i) + std::string("].constant"), 1.0f);
             shader->setFloat(std::string("pointLights[") + std::to_string(i) + std::string("].linear"), 0.09f);
@@ -303,7 +303,8 @@ int main(void){
 
         shader->setMatrix4(std::string("lightSpaceMatrixs[") + std::to_string(0) + std::string("]"), lightSpaceMatrix1);
         shader->setMatrix4(std::string("lightSpaceMatrixs[") + std::to_string(1) + std::string("]"), lightSpaceMatrix2);
-        
+
+        shader->setFloat("material.shininess", 0.0f);
         wood->Bind(0);
         wood->Bind(1);
         frame1->BindTex(2);
@@ -314,6 +315,7 @@ int main(void){
         surfaceVAO->Bind();
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
+        shader->setFloat("material.shininess", 32.0f);
         container1->Bind(0);
         container2->Bind(1);
         frame1->BindTex(2);
@@ -370,6 +372,15 @@ void renderSchene(Shader *shader) {
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
 
+    // model = glm::mat4(1.0f);
+    // model = glm::translate(model, glm::vec3(0.0f, 0.0f, 4.0));
+    // model = glm::rotate(model, glm::radians(-40.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+    // model = glm::scale(model, glm::vec3(0.25));
+    // shader->setMatrix4("model", model);
+    // cubeVAO->Bind();
+    // glDrawArrays(GL_TRIANGLES, 0, 36);
+    // glBindVertexArray(0);
+
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
     model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
@@ -378,6 +389,24 @@ void renderSchene(Shader *shader) {
     cubeVAO->Bind();
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
+
+    // model = glm::mat4(1.0f);
+    // model = glm::translate(model, glm::vec3(-3.0f, 2.0f, 2.0f));
+    // model = glm::rotate(model, glm::radians(20.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+    // model = glm::scale(model, glm::vec3(0.70));
+    // shader->setMatrix4("model", model);
+    // cubeVAO->Bind();
+    // glDrawArrays(GL_TRIANGLES, 0, 36);
+    // glBindVertexArray(0);
+
+    // model = glm::mat4(1.0f);
+    // model = glm::translate(model, glm::vec3(3.0f, 1.0f, -4.0f));
+    // model = glm::rotate(model, glm::radians(30.0f), glm::normalize(glm::vec3(0.0, 1.0, 0.0)));
+    // model = glm::scale(model, glm::vec3(0.70));
+    // shader->setMatrix4("model", model);
+    // cubeVAO->Bind();
+    // glDrawArrays(GL_TRIANGLES, 0, 36);
+    // glBindVertexArray(0);
 }
 
 void MouseCallBackWrapper(GLFWwindow *window, double xpos, double ypos){
