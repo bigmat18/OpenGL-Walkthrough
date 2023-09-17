@@ -1,6 +1,6 @@
 CC = g++
-CFLAGS = -std=c++17 -Wall -g
-LFLAGS = -lglfw -lGLEW -framework OpenGL
+CFLAGS = -std=c++17 -Wall -g `pkg-config --static --libs assimp`
+LFLAGS = -lglfw -lGLEW -framework OpenGL 
 
 SRC_DIR = .
 LIB_DIR := ./libs

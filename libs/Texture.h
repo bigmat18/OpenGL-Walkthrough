@@ -20,6 +20,8 @@ class Texture {
         int GetWidth() const { return this->width; }
         int GetHeight() const { return this->height; }
 
+        GLuint GetID() const { return this->rendererID; }
+
         void SetFlipVerticallyOnLoad(bool value = true);
         void LoadImageBuffer(char const *string);
         void FreeImageBuffer();
