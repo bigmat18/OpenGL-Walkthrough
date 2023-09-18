@@ -11,7 +11,13 @@ class Texture {
         unsigned char *localBuffer;
 
     public:
-        Texture();
+        enum Type {
+            diffuse = 0,
+            specular = 1,
+            none = 2
+        } type;
+
+        Texture(int type = 3);
         virtual ~Texture();
 
         virtual void Bind(GLuint slot) const = 0;

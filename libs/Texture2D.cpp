@@ -1,8 +1,8 @@
 #include "Texture2D.h"
 #include <GL/glew.h>
 
-Texture2D::Texture2D(const std::string &path) : Texture(), 
-                                                filePath(path)
+Texture2D::Texture2D(const std::string &path, int type) : Texture(type), 
+                                                          filePath(path)
 {
     this->SetFlipVerticallyOnLoad();
     this->LoadImageBuffer(this->filePath.c_str());
