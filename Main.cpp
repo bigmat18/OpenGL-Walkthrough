@@ -22,6 +22,7 @@ const unsigned int SCR_HEIGHT = 600;
 
 Camera *camera = new Camera(SCR_WIDTH, SCR_HEIGHT, 45.0f);
 VertexArray *cubeVAO, *quadVAO, *surfaceVAO, *skyboxVAO;
+Model *obj;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 glm::vec3 lightPos[] = {
@@ -218,8 +219,10 @@ int main(void){
 
     float near_plane = 1.0f, far_plane = 7.5f;
 
-    Shader *objShader = new Shader("shaders/model.vert", "shaders/model.frag");
-    Model *obj = new Model("images/backpack/backpack.obj");
+    Texture2D *objDiffuse = new Texture2D("images/backpack/diffuse.jpg");
+    Texture2D *objSpecular = new Texture2D("images/backpack/specular.jpg");
+
+    obj = new Model("images/backpack/backpack.obj");
 
     while (!glfwWindowShouldClose(window)){
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -319,8 +322,8 @@ int main(void){
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         shader->setFloat("material.shininess", 32.0f);
-        container1->Bind(0);
-        container2->Bind(1);
+        objDiffuse->Bind(0);
+        objSpecular->Bind(1);
         frame1->BindTex(2);
         frame2->BindTex(3);
         renderSchene(shader);
@@ -337,16 +340,6 @@ int main(void){
             glDrawArrays(GL_TRIANGLES, 0, 36);
             glBindVertexArray(0);
         }
-
-        objShader->use();
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
-        model = glm::scale(model, glm::vec3(0.5f));
-        objShader->setMatrix4("model", model);
-        objShader->setMatrix4("projection", projection);
-        objShader->setMatrix4("view", view);
-        objShader->setInt("texture_diffuse1", 0);
-        obj->Draw(*objShader);
 
         glDepthFunc(GL_LEQUAL);
         skybox->use();
@@ -367,59 +360,12 @@ int main(void){
 
 void renderSchene(Shader *shader) {
     glm::mat4 model = glm::mat4(1.0f);
-    
-    // cubes
-    // model = glm::mat4(1.0f);
-    // model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
-    // model = glm::scale(model, glm::vec3(0.5f));
-    // shader->setMatrix4("model", model);
-    // cubeVAO->Bind();
-    // glDrawArrays(GL_TRIANGLES, 0, 36);
-    // glBindVertexArray(0);
 
-    // model = glm::mat4(1.0f);
-    // model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
-    // model = glm::scale(model, glm::vec3(0.5f));
-    // shader->setMatrix4("model", model);
-    // cubeVAO->Bind();
-    // glDrawArrays(GL_TRIANGLES, 0, 36);
-    // glBindVertexArray(0);
-
-    // model = glm::mat4(1.0f);
-    // model = glm::translate(model, glm::vec3(0.0f, 0.0f, 4.0));
-    // model = glm::rotate(model, glm::radians(-40.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-    // model = glm::scale(model, glm::vec3(0.25));
-    // shader->setMatrix4("model", model);
-    // cubeVAO->Bind();
-    // glDrawArrays(GL_TRIANGLES, 0, 36);
-    // glBindVertexArray(0);
-
-    // model = glm::mat4(1.0f);
-    // model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
-    // model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-    // model = glm::scale(model, glm::vec3(0.25));
-    // shader->setMatrix4("model", model);
-    // cubeVAO->Bind();
-    // glDrawArrays(GL_TRIANGLES, 0, 36);
-    // glBindVertexArray(0);
-
-    // model = glm::mat4(1.0f);
-    // model = glm::translate(model, glm::vec3(-3.0f, 1.0f, 2.0f));
-    // model = glm::rotate(model, glm::radians(20.0f), glm::normalize(glm::vec3(0.0, 1.0, 1.0)));
-    // model = glm::scale(model, glm::vec3(0.70));
-    // shader->setMatrix4("model", model);
-    // cubeVAO->Bind();
-    // glDrawArrays(GL_TRIANGLES, 0, 36);
-    // glBindVertexArray(0);
-
-    // model = glm::mat4(1.0f);
-    // model = glm::translate(model, glm::vec3(3.0f, 1.0f, -4.0f));
-    // model = glm::rotate(model, glm::radians(30.0f), glm::normalize(glm::vec3(0.0, 1.0, 0.0)));
-    // model = glm::scale(model, glm::vec3(0.70));
-    // shader->setMatrix4("model", model);
-    // cubeVAO->Bind();
-    // glDrawArrays(GL_TRIANGLES, 0, 36);
-    // glBindVertexArray(0);
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0));
+    model = glm::scale(model, glm::vec3(0.5f));
+    shader->setMatrix4("model", model);
+    obj->Draw();
 }
 
 void MouseCallBackWrapper(GLFWwindow *window, double xpos, double ypos){

@@ -11,15 +11,11 @@
 class Model {
     public:
         Model(char *path);
-        void Draw(class Shader &shader);
+        void Draw();
     private:
         std::vector<class Mesh*> m_meshes;
-        std::string m_directory;
 
         void LoadModel(std::string path);
-        // void ProcessNode(aiNode *node, const aiScene *scene);
-        // Mesh ProcessMesh(aiMesh *mesh, const aiScene *scene);
-        // std::vector<Tex> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
 };
 
 #endif

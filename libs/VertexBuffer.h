@@ -7,10 +7,12 @@
 class VertexBuffer {
     private:
         GLuint VBO;
+        unsigned int size;
     public:
         VertexBuffer(const void* data, GLuint size);
         ~VertexBuffer();
 
+        unsigned int GetSize() const { return this->size; }
         void Bind() const;
         void Unbind() const;
     

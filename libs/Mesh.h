@@ -19,19 +19,15 @@ typedef struct {
 
 class Mesh {
     public:
-        std::vector<Vertex*> m_vertices;
-        std::vector<GLuint> m_indices;
-        std::vector<Texture2D*> m_textures;
-
         Mesh(std::vector<Vertex*> vertices);
         ~Mesh();
         
-        void Draw(class Shader &shader);
+        void Draw();
 
     private:
         VertexArray* VAO;
         VertexBuffer* VBO;
-        IndexBuffer* EBO;
+        std::vector<Vertex *> m_vertices;
 
         void SetupMesh();
 };
