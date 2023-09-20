@@ -11,7 +11,10 @@
 class Model {
     public:
         Model(char *path);
+        ~Model();
+        
         void Draw();
+
     private:
         std::vector<class Mesh*> m_meshes;
 

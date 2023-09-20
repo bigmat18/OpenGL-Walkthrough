@@ -28,7 +28,7 @@ void Mesh::SetupMesh() {
         vertices.push_back(el->TexCoords.x);
         vertices.push_back(el->TexCoords.y);
     }
-    
+    this->size = vertices.size();
     this->VAO = new VertexArray();
     this->VBO = new VertexBuffer(&vertices[0], vertices.size() * sizeof(float));
 
@@ -43,5 +43,5 @@ void Mesh::SetupMesh() {
 
 void Mesh::Draw() {
     this->VAO->Bind();
-    glDrawArrays(GL_TRIANGLES, 0, this->VBO->GetSize() / 8);
+    glDrawArrays(GL_TRIANGLES, 0, this->size / 8);
 }

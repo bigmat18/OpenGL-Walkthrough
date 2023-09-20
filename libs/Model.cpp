@@ -9,6 +9,11 @@ Model::Model(char *path) {
     this->LoadModel(path);
 }
 
+Model::~Model() {
+    for(auto mesh : this->m_meshes)
+        delete mesh;
+}
+
 void Model::Draw() {
     for(unsigned int i = 0; i < this->m_meshes.size(); i++) {
         this->m_meshes[i]->Draw();
@@ -63,7 +68,7 @@ void Model::LoadModel(std::string path) {
             vert->Normal.z = attrib.normals[3 * index.normal_index + 2];
 
             vert->TexCoords.x = attrib.texcoords[2 * index.texcoord_index + 0];
-            vert->TexCoords.x = attrib.texcoords[2 * index.texcoord_index + 1];
+            vert->TexCoords.y = attrib.texcoords[2 * index.texcoord_index + 1];
 
             vertices.push_back(vert);
         }

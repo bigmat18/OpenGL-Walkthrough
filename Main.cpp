@@ -326,6 +326,17 @@ int main(void){
         objSpecular->Bind(1);
         frame1->BindTex(2);
         frame2->BindTex(3);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0));
+        model = glm::scale(model, glm::vec3(0.5f));
+        shader->setMatrix4("model", model);
+        obj->Draw();
+
+        container1->Bind(0);
+        container2->Bind(1);
+        frame1->BindTex(2);
+        frame2->BindTex(3);
         renderSchene(shader);
 
         light->use();
@@ -362,10 +373,56 @@ void renderSchene(Shader *shader) {
     glm::mat4 model = glm::mat4(1.0f);
 
     model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0));
+    model = glm::translate(model, glm::vec3(0.0f, 1.0f, -3.5f));
     model = glm::scale(model, glm::vec3(0.5f));
     shader->setMatrix4("model", model);
-    obj->Draw();
+    cubeVAO->Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
+    model = glm::scale(model, glm::vec3(0.5f));
+    shader->setMatrix4("model", model);
+    cubeVAO->Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 4.0));
+    model = glm::rotate(model, glm::radians(-40.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+    model = glm::scale(model, glm::vec3(0.25));
+    shader->setMatrix4("model", model);
+    cubeVAO->Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
+    model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+    model = glm::scale(model, glm::vec3(0.25));
+    shader->setMatrix4("model", model);
+    cubeVAO->Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-3.0f, 1.0f, 2.0f));
+    model = glm::rotate(model, glm::radians(20.0f), glm::normalize(glm::vec3(0.0, 1.0, 1.0)));
+    model = glm::scale(model, glm::vec3(0.70));
+    shader->setMatrix4("model", model);
+    cubeVAO->Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(3.0f, 1.0f, -4.0f));
+    model = glm::rotate(model, glm::radians(30.0f), glm::normalize(glm::vec3(0.0, 1.0, 0.0)));
+    model = glm::scale(model, glm::vec3(0.70));
+    shader->setMatrix4("model", model);
+    cubeVAO->Bind();
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
 }
 
 void MouseCallBackWrapper(GLFWwindow *window, double xpos, double ypos){

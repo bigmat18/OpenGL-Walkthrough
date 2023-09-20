@@ -28,6 +28,7 @@ class Mesh {
         VertexArray* VAO;
         VertexBuffer* VBO;
         std::vector<Vertex *> m_vertices;
+        unsigned int size;
 
         void SetupMesh();
 };

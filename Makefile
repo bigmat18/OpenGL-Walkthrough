@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -std=c++17 -Wall -g `pkg-config --static --libs assimp`
+CFLAGS = -std=c++17 -Wall -g 
 LFLAGS = -lglfw -lGLEW -framework OpenGL 
 
 SRC_DIR = .
@@ -16,8 +16,8 @@ LIB_FILES := $(wildcard $(LIB_DIR)/*.cpp)
 LIB_OBJ_FILES := $(patsubst $(LIB_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(LIB_FILES))
 EXE_FILES := $(patsubst $(SRC_DIR)/%.cpp, %, $(SRC_FILES))
 
-INCLUDE_PATHS = `pkg-config --cflags glfw3` `pkg-config --cflags glew`
-LIBRARY_PATHS = `pkg-config --static --libs glfw3` `pkg-config --static --libs glew`
+INCLUDE_PATHS = `pkg-config --cflags glfw3` `pkg-config --cflags glew` `pkg-config --static --libs assimp`
+LIBRARY_PATHS = `pkg-config --static --libs glfw3` `pkg-config --static --libs glew` `pkg-config --static --libs assimp`
 
 OBJ_NAME = main
 
