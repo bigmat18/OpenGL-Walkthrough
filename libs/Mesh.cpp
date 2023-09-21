@@ -38,10 +38,10 @@ void Mesh::SetupMesh() {
     layout.Push<float>(2);
 
     this->VAO->AddBuffer(*this->VBO, layout);
-    this->VAO->Unbind();
 }
 
 void Mesh::Draw() {
     this->VAO->Bind();
     glDrawArrays(GL_TRIANGLES, 0, this->size / 8);
+    glBindVertexArray(0);
 }

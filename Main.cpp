@@ -219,10 +219,10 @@ int main(void){
 
     float near_plane = 1.0f, far_plane = 7.5f;
 
-    Texture2D *objDiffuse = new Texture2D("images/backpack/diffuse.jpg");
-    Texture2D *objSpecular = new Texture2D("images/backpack/specular.jpg");
+    Texture2D *objDiffuse = new Texture2D("images/SuzanneTex.png", true);
+    Texture2D *objSpecular = new Texture2D("images/backpack/specular.jpg", true);
 
-    obj = new Model("images/backpack/backpack.obj");
+    obj = new Model("images/Suzanne.obj");
 
     while (!glfwWindowShouldClose(window)){
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -259,6 +259,11 @@ int main(void){
         simpleDepthShader->setMatrix4("model", model);
         surfaceVAO->Bind();
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0));
+        model = glm::scale(model, glm::vec3(0.5f));
+        shader->setMatrix4("model", model);
+        obj->Draw();
         renderSchene(simpleDepthShader);
         frame1->UnbindFrame();
 
@@ -272,6 +277,11 @@ int main(void){
         simpleDepthShader->setMatrix4("model", model);
         surfaceVAO->Bind();
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0));
+        model = glm::scale(model, glm::vec3(0.5f));
+        shader->setMatrix4("model", model);
+        obj->Draw();
         renderSchene(simpleDepthShader);
         frame2->UnbindFrame();
 
@@ -323,7 +333,7 @@ int main(void){
 
         shader->setFloat("material.shininess", 32.0f);
         objDiffuse->Bind(0);
-        objSpecular->Bind(1);
+        objDiffuse->Bind(1);
         frame1->BindTex(2);
         frame2->BindTex(3);
 

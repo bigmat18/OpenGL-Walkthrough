@@ -3,12 +3,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-Texture::Texture(int type) : rendererID(0),
-                             width(0),
-                             height(0),
-                             BPP(0),
-                             localBuffer(nullptr),
-                             type(Texture::Type(type)) {};
+Texture::Texture() : rendererID(0),
+                     width(0),
+                     height(0),
+                     BPP(0),
+                     localBuffer(nullptr) {};
+                     
 Texture::~Texture() {};
 
 void Texture::SetFlipVerticallyOnLoad(bool value) {

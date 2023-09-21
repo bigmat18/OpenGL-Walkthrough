@@ -1,8 +1,8 @@
 #include "Texture3D.h"
 #include <GL/glew.h>
 
-Texture3D::Texture3D(const std::vector<std::string> &paths, int type) : Texture(type), 
-                                                                        filePaths(paths)
+Texture3D::Texture3D(const std::vector<std::string> &paths) : Texture(), 
+                                                              filePaths(paths)
 {
     this->SetFlipVerticallyOnLoad(false);
     glGenTextures(1, &this->rendererID);
