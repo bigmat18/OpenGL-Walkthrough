@@ -16,6 +16,7 @@
 #include "libs/Shader.h"
 #include "libs/FrameBuffer.h"
 #include "libs/Model.h"
+#include "libs/Surface.h"
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -214,6 +215,7 @@ int main(void){
     Texture2D *wood = new Texture2D("images/brickwall.jpeg");
     Texture2D *container1 = new Texture2D("images/container2.png");
     Texture2D *container2 = new Texture2D("images/container2_specular.png");
+    Texture2D *win = new Texture2D("images/window.png");
     Texture3D *maps = new Texture3D(faces);
 
     FrameBuffer *frame1 = new FrameBuffer();
@@ -225,6 +227,7 @@ int main(void){
     // Texture2D *objSpecular = new Texture2D("images/backpack/specular.jpg", true);
 
     obj = new Model("images/Suzanne.obj");
+    Surface *winSurf = new Surface(1.0f, 1.0f);
 
     while (!glfwWindowShouldClose(window)){
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -267,6 +270,11 @@ int main(void){
         shader->setMatrix4("model", model);
         obj->Draw();
         renderSchene(simpleDepthShader);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 1.0f, 5.0f));
+        model = glm::scale(model, glm::vec3(1.5f));
+        simpleDepthShader->setMatrix4("model", model);
+        winSurf->Draw();
         frame1->UnbindFrame();
 
         glm::mat4 lightView2 = glm::lookAt(lightPos[1], glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
@@ -282,13 +290,31 @@ int main(void){
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0));
         model = glm::scale(model, glm::vec3(0.5f));
-        shader->setMatrix4("model", model);
+        simpleDepthShader->setMatrix4("model", model);
         obj->Draw();
         renderSchene(simpleDepthShader);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 1.0f, 5.0f));
+        model = glm::scale(model, glm::vec3(1.5f));
+        simpleDepthShader->setMatrix4("model", model);
+        winSurf->Draw();
         frame2->UnbindFrame();
 
         // 2. render scene as normal using the generated depth/shadow map
         // --------------------------------------------------------------
+        light->use();
+        light->setMatrix4("projection", projection);
+        light->setMatrix4("view", view);
+
+        for (int i = 0; i < 2; i++){
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), lightPos[i]);
+            model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+            light->setMatrix4("model", model);
+            cubeVAO->Bind();
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glBindVertexArray(0);
+        }
+
         shader->use();
         shader->setMatrix4("projection", projection);
         shader->setMatrix4("view", view);
@@ -351,18 +377,15 @@ int main(void){
         frame2->BindTex(3);
         renderSchene(shader);
 
-        light->use();
-        light->setMatrix4("projection", projection);
-        light->setMatrix4("view", view);
-
-        for(int i = 0; i < 2; i++){
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), lightPos[i]);
-            model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
-            light->setMatrix4("model", model);
-            cubeVAO->Bind();
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glBindVertexArray(0);
-        }
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 1.0f, 5.0f));
+        model = glm::scale(model, glm::vec3(1.5f));
+        shader->setMatrix4("model", model);
+        win->Bind(0);
+        win->Bind(1);
+        frame1->BindTex(2);
+        frame2->BindTex(3);
+        winSurf->Draw();
 
         glDepthFunc(GL_LEQUAL);
         skybox->use();
