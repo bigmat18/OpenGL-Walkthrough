@@ -220,7 +220,7 @@ int main(void){
     float near_plane = 1.0f, far_plane = 7.5f;
 
     Texture2D *objDiffuse = new Texture2D("images/SuzanneTex.png", true);
-    Texture2D *objSpecular = new Texture2D("images/backpack/specular.jpg", true);
+    // Texture2D *objSpecular = new Texture2D("images/backpack/specular.jpg", true);
 
     obj = new Model("images/Suzanne.obj");
 

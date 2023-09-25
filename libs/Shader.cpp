@@ -6,8 +6,8 @@
 #include <string>
 
 Shader::Shader(const char *vertexPath, const char *fragmentPath){
-    createShader(this->readFile(vertexPath).c_str(), GL_VERTEX_SHADER);
-    createShader(this->readFile(fragmentPath).c_str(), GL_FRAGMENT_SHADER);
+    this->createShader(this->readFile(vertexPath).c_str(), GL_VERTEX_SHADER);
+    this->createShader(this->readFile(fragmentPath).c_str(), GL_FRAGMENT_SHADER);
     this->createProgram();
     glDeleteShader(this->vertexShader);
     glDeleteShader(this->fragmentShader);
