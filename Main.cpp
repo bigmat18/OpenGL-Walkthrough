@@ -7,17 +7,17 @@
 
 #include <sstream>
 #include <string>
-
-#include "libs/Cube.h"
-#include "libs/debugging.h"
-#include "libs/Camera.h"
-#include "libs/Texture2D.h"
-#include "libs/Texture3D.h"
-#include "libs/Shader.h"
-#include "libs/FrameBuffer.h"
-#include "libs/Model.h"
-#include "libs/Surface.h"
-
+ 
+#include "src/Cube.h"
+#include "src/debugging.h"
+#include "src/Camera.h"
+#include "src/Texture2D.h"
+#include "src/Texture3D.h"
+#include "src/Shader.h"
+#include "src/FrameBuffer.h"
+#include "src/Model.h"
+#include "src/Surface.h"
+ 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 

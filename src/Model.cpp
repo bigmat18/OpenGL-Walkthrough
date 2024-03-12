@@ -3,7 +3,7 @@
 #include "Mesh.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
+#include <tiny_obj_loader.h>
 
 Model::Model(char *path) {
     this->LoadModel(path);

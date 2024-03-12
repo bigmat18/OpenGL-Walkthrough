@@ -9,7 +9,7 @@ const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-
+ 
 Camera::Camera(const float width, const float height, const float fov) : Yaw(YAW),
                                                                          Pitch(PITCH),
                                                                          MovementSpeed(SPEED),
